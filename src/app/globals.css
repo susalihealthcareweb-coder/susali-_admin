@@ -1,0 +1,156 @@
+@import "tailwindcss";
+
+/* Palette taken from the SUSALI Healthcare logo: deep emerald, gold, cream. */
+@theme inline {
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
+  --font-brand: var(--font-wordmark);
+  --color-brand-50: #eef6f1;
+  --color-brand-100: #d4eadf;
+  --color-brand-200: #a8d4bf;
+  --color-brand-300: #6fb595;
+  --color-brand-400: #3a9470;
+  --color-brand-500: #1f7d5c;
+  --color-brand-600: #156a4d;
+  --color-brand-700: #0f5840;
+  --color-brand-800: #0b4633;
+  --color-brand-900: #083526;
+  --color-gold-50: #fbf6ea;
+  --color-gold-100: #f5e9c9;
+  --color-gold-200: #ecd49a;
+  --color-gold-300: #e1bd6c;
+  --color-gold-400: #d4a84c;
+  --color-gold-500: #c4923a;
+  --color-gold-600: #a8772b;
+  --color-gold-700: #875c22;
+  --color-cream: #faf6ef;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #faf6ef;
+  color: #10241c;
+}
+
+h1, .font-display { font-family: var(--font-heading), Georgia, serif; letter-spacing: -0.01em; }
+h1 { font-weight: 700; }
+.font-brand { font-family: var(--font-wordmark), Georgia, serif; }
+
+/* Gold accents echoing the logo. */
+.text-gold-gradient { background: linear-gradient(100deg, #875c22, #e1bd6c 35%, #c4923a 55%, #f5e9c9 70%, #a8772b); -webkit-background-clip: text; background-clip: text; color: transparent; background-size: 200% 100%; animation: shine 6s ease-in-out infinite; }
+.text-emerald-gradient { background: linear-gradient(100deg, #083526, #1f7d5c 45%, #0b4633); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gold-rule { height: 2px; background: linear-gradient(90deg, transparent, #c4923a 20%, #ecd49a 50%, #c4923a 80%, transparent); }
+.gold-ring { box-shadow: inset 0 0 0 1px rgba(196, 146, 58, 0.35); }
+@keyframes shine { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+
+@layer components {
+  .card { @apply rounded-2xl border border-[#ebe3d3] bg-white shadow-[0_1px_3px_rgba(16,36,28,0.05)]; }
+  .card-pad { @apply p-4 sm:p-5; }
+  .btn { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:active:scale-100 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600; }
+  .btn-primary { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:active:scale-100 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 bg-gradient-to-b from-brand-600 to-brand-800 text-white shadow-sm shadow-brand-900/20 ring-1 ring-inset ring-gold-400/30 hover:from-brand-700 hover:to-brand-900 hover:ring-gold-300/60; }
+  .btn-secondary { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:active:scale-100 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 border border-[#e2d8c4] bg-white text-brand-900 hover:border-gold-400 hover:bg-gold-50; }
+  .btn-danger { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:active:scale-100 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 bg-red-600 text-white hover:bg-red-700; }
+  .btn-ghost { @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:active:scale-100 disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 text-slate-700 hover:bg-slate-100; }
+  .btn-sm { @apply px-2.5 py-1.5 text-xs; }
+  .input { @apply block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-gold-400/30 disabled:bg-slate-50 disabled:text-slate-500; }
+  .label { @apply mb-1 block text-xs font-medium text-slate-600; }
+  .table { @apply w-full text-left text-sm; }
+  .table th { @apply whitespace-nowrap border-b border-[#ebe3d3] bg-[#fbf8f2] px-3 py-2 text-xs font-semibold uppercase tracking-wide text-slate-500; }
+  .table td { @apply border-b border-slate-100 px-3 py-2.5 align-top; }
+  .table tbody tr:hover { @apply bg-gold-50/60; }
+  .link { @apply font-medium text-brand-700 hover:underline; }
+  .muted { @apply text-slate-500; }
+}
+
+/* ---------- Motion ---------- */
+@keyframes fade-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scale-in { from { opacity: 0; transform: scale(0.95) translateY(6px); } to { opacity: 1; transform: none; } }
+@keyframes slide-in-right { from { transform: translateX(100%); } to { transform: none; } }
+@keyframes slide-in-left { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+@keyframes slide-in-from-right { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(16px) scale(0.96); } to { opacity: 1; transform: none; } }
+@keyframes shimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+@keyframes grow-x { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes grow-y { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 60% { transform: scale(1.12); opacity: 1; } 100% { transform: scale(1); } }
+@keyframes float { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(18px, -22px) scale(1.06); } }
+@keyframes pulse-ring { 0% { box-shadow: 0 0 0 0 rgba(196, 146, 58, 0.5); } 100% { box-shadow: 0 0 0 14px rgba(196, 146, 58, 0); } }
+@keyframes wave { 0%, 100% { transform: rotate(0); } 20%, 60% { transform: rotate(16deg); } 40%, 80% { transform: rotate(-8deg); } }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(2px); } 30%, 50%, 70% { transform: translateX(-4px); } 40%, 60% { transform: translateX(4px); } }
+
+.animate-fade-up { animation: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.animate-fade-in { animation: fade-in 0.4s ease both; }
+.animate-scale-in { animation: scale-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.animate-slide-left { animation: slide-in-left 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.animate-slide-right { animation: slide-in-from-right 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.animate-pop { animation: pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.animate-float { animation: float 9s ease-in-out infinite; }
+.animate-pulse-ring { animation: pulse-ring 1.8s ease-out infinite; }
+.animate-shake { animation: shake 0.45s both; }
+.animate-grow-x { transform-origin: left; animation: grow-x 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.animate-grow-y { transform-origin: bottom; animation: grow-y 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.animate-draw { stroke-dasharray: 60; stroke-dashoffset: 60; animation: draw 0.6s 0.25s ease forwards; }
+
+/* Login method switch: the side leaving fades, blurs and shrinks; the side
+   arriving settles in and its fields cascade. */
+.switch-panel { transition: opacity 0.5s ease, filter 0.5s ease, transform 0.6s cubic-bezier(0.65, 0, 0.35, 1); transform-origin: center top; }
+.switch-panel.is-out { opacity: 0; filter: blur(6px); transform: scale(0.92) rotateY(8deg); }
+.switch-panel.is-active { opacity: 1; filter: none; transform: none; }
+.switch-panel.is-active form > * { animation: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.switch-panel.is-active form > *:nth-child(1) { animation-delay: 0.18s; }
+.switch-panel.is-active form > *:nth-child(2) { animation-delay: 0.26s; }
+.switch-panel.is-active form > *:nth-child(3) { animation-delay: 0.34s; }
+.switch-panel.is-active form > *:nth-child(n + 4) { animation-delay: 0.42s; }
+
+/* Page content enters with a short stagger. */
+.page-enter > * { animation: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.stagger > * { animation: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.page-enter > *:nth-child(2), .stagger > *:nth-child(2) { animation-delay: 0.05s; }
+.page-enter > *:nth-child(3), .stagger > *:nth-child(3) { animation-delay: 0.1s; }
+.page-enter > *:nth-child(4), .stagger > *:nth-child(4) { animation-delay: 0.15s; }
+.page-enter > *:nth-child(5), .stagger > *:nth-child(5) { animation-delay: 0.2s; }
+.page-enter > *:nth-child(6), .stagger > *:nth-child(6) { animation-delay: 0.25s; }
+.page-enter > *:nth-child(7), .stagger > *:nth-child(7) { animation-delay: 0.3s; }
+.page-enter > *:nth-child(n + 8), .stagger > *:nth-child(n + 8) { animation-delay: 0.35s; }
+/* Nested sections inside a page wrapper stagger too. */
+.page-enter > .space-y-5 > *, .page-enter > .space-y-4 > * { animation: fade-up 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.page-enter > .space-y-5 > *:nth-child(2), .page-enter > .space-y-4 > *:nth-child(2) { animation-delay: 0.06s; }
+.page-enter > .space-y-5 > *:nth-child(3), .page-enter > .space-y-4 > *:nth-child(3) { animation-delay: 0.12s; }
+.page-enter > .space-y-5 > *:nth-child(4), .page-enter > .space-y-4 > *:nth-child(4) { animation-delay: 0.18s; }
+.page-enter > .space-y-5 > *:nth-child(n + 5), .page-enter > .space-y-4 > *:nth-child(n + 5) { animation-delay: 0.24s; }
+/* Table rows fade in one after another. */
+.table tbody tr { animation: fade-in 0.4s ease both; }
+.table tbody tr:nth-child(2) { animation-delay: 0.03s; }
+.table tbody tr:nth-child(3) { animation-delay: 0.06s; }
+.table tbody tr:nth-child(4) { animation-delay: 0.09s; }
+.table tbody tr:nth-child(5) { animation-delay: 0.12s; }
+.table tbody tr:nth-child(n + 6) { animation-delay: 0.15s; }
+
+.lift { transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease; }
+.lift:hover { transform: translateY(-2px); box-shadow: 0 10px 28px -12px rgba(11, 70, 51, 0.28), inset 0 0 0 1px rgba(196, 146, 58, 0.35); }
+.lift:active { transform: translateY(0) scale(0.99); }
+
+.skeleton {
+  background: linear-gradient(90deg, #f1ebdf 0px, #fbf8f2 120px, #f1ebdf 240px);
+  background-size: 800px 100%;
+  animation: shimmer 1.3s linear infinite;
+  border-radius: 0.5rem;
+}
+
+dialog[open] { animation: scale-in 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+dialog[open]::backdrop { animation: fade-in 0.25s ease; }
+
+.input { transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
