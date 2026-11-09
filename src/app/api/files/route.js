@@ -1,11 +1,11 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { NextResponse } from "next/server";
-import { localSig, LOCAL_ROOT, s3Enabled } from "@/lib/storage";
+import { localSig, LOCAL_ROOT, cloudEnabled } from "@/lib/storage";
 
 // Development-only stand-in for an S3 signed GET (valid 10 minutes).
 export async function GET(req) {
-  if (s3Enabled()) return NextResponse.json({ error: "Not available" }, { status: 404 });
+  if (cloudEnabled()) return NextResponse.json({ error: "Not available" }, { status: 404 });
   const u = new URL(req.url);
   const key = u.searchParams.get("key") || "";
   const exp = Number(u.searchParams.get("exp"));

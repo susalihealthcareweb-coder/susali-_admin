@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { ZodError } from "zod";
 
 export class ApiError extends Error {
@@ -11,12 +11,24 @@ export class ApiError extends Error {
 
 export const ok = (data, init) => NextResponse.json(data, init);
 
+// After a response is sent, run any background job that is due (no cron needed).
+function scheduleDueJobs() {
+  if (process.env.BACKGROUND_JOBS === "off") return;
+  try {
+    after(async () => (await import("./jobs")).runDueJobs());
+  } catch {
+    // Outside a request (scripts): nothing to schedule.
+  }
+}
+
 // Wraps a route handler so thrown ApiError / ZodError become JSON responses.
 export function route(fn) {
   return async (req, ctx) => {
     try {
       const params = ctx?.params ? await ctx.params : {};
-      return await fn(req, params);
+      const res = await fn(req, params);
+      scheduleDueJobs();
+      return res;
     } catch (e) {
       if (e instanceof ApiError) {
         return NextResponse.json({ error: e.message, details: e.details }, { status: e.status });

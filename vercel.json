@@ -1,7 +1,7 @@
 {
   "crons": [
-    { "path": "/api/cron/notifications", "schedule": "*/5 * * * *" },
-    { "path": "/api/cron/escalations", "schedule": "*/15 * * * *" },
-    { "path": "/api/cron/daily-summary", "schedule": "30 3 * * *" }
+    { "path": "/api/cron/daily-summary", "schedule": "30 3 * * *" },
+    { "path": "/api/cron/escalations", "schedule": "0 4 * * *" },
+    { "path": "/api/cron/notifications", "schedule": "30 4 * * *" }
   ]
 }

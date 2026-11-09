@@ -26,9 +26,23 @@ function samplePdf(title, lines) {
   });
 }
 
-// Writes the file where the app's storage expects it (local dev storage only).
+// Writes the file where the app's storage expects it: Cloudflare R2 when
+// configured, otherwise local development storage.
+let r2;
 async function storeFile(key, buf) {
-  if (process.env.S3_BUCKET) return false;
+  if (process.env.R2_BUCKET) {
+    const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+    r2 ||= new S3Client({
+      region: "auto",
+      forcePathStyle: true,
+      endpoint: process.env.R2_ENDPOINT || `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID, secretAccessKey: process.env.R2_SECRET_ACCESS_KEY },
+      requestChecksumCalculation: "WHEN_REQUIRED",
+      responseChecksumValidation: "WHEN_REQUIRED",
+    });
+    await r2.send(new PutObjectCommand({ Bucket: process.env.R2_BUCKET, Key: key, Body: buf, ContentType: "application/pdf" }));
+    return true;
+  }
   const file = path.join(process.cwd(), ".uploads", key);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   fs.writeFileSync(file, buf);

@@ -1,0 +1,22 @@
+# Optional, free: precise schedules when the site runs on Vercel's Hobby plan
+# (which only allows daily cron jobs). Needs two repository secrets:
+#   SUSALI_URL   e.g. https://app.susali.in
+#   CRON_SECRET  the same value as the website's CRON_SECRET
+name: SUSALI scheduled jobs
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # WhatsApp / email queue and retries
+    - cron: "*/15 * * * *"  # time-limit escalations and auto-close
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Notifications queue
+        run: curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${{ secrets.SUSALI_URL }}/api/cron/notifications"
+      - name: Escalations
+        if: github.event.schedule == '*/15 * * * *' || github.event_name == 'workflow_dispatch'
+        run: curl -fsS -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" "${{ secrets.SUSALI_URL }}/api/cron/escalations"

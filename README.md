@@ -2,7 +2,7 @@
 
 Referral-management platform that tracks a company employee from a dispensary referral to hospital treatment and back. Built from *SUSALI – Functional Project Specification* (Nov 8, 2026).
 
-**Stack:** Next.js 16 (App Router, JavaScript) · MongoDB + Prisma 6 · Auth.js v5 · MSG91 (WhatsApp + OTP) · Nodemailer · S3-compatible storage · installable PWA.
+**Stack:** Next.js 16 (App Router, JavaScript) · MongoDB + Prisma 6 · Auth.js v5 · MSG91 (WhatsApp + OTP) · Nodemailer · Cloudflare R2 file storage · installable PWA.
 
 ## Run it
 
@@ -62,7 +62,7 @@ Set `SEED_DEMO=0` before seeding production, and change the Super Admin password
 |---|---|
 | MSG91 | OTP is `DEV_OTP`; WhatsApp sends are logged to the console and marked `simulated` |
 | SMTP | Emails are logged to the console and marked `simulated` |
-| S3 | Files are stored in `./.uploads` behind HMAC-signed 10-minute links |
+| Cloudflare R2 | Files are stored in `./.uploads` behind HMAC-signed 10-minute links |
 
 In production each of these refuses to run unconfigured instead of simulating.
 
@@ -90,7 +90,7 @@ src/lib/
   referral-actions.js       guarded status change + history + audit
   notify.js                 event → recipients → Notification rows → worker (spec section 7)
   msg91.js, mailer.js       WhatsApp/OTP and email transports
-  storage.js                S3 signed upload/download URLs
+  storage.js                Cloudflare R2 signed upload/download URLs
   dashboard.js              dashboard counts, turnaround, escalation detection
 src/app/api/                route handlers (spec section 9.1)
 src/app/[role]/             staff app: super-admin, sudo-admin, support, cluster-manager, hospital
@@ -99,17 +99,41 @@ src/app/patient/            patient PWA
 
 Every API route checks role and scope on the server. Status routes are all under `/api/referrals/:id/<action>` (submit, lock, unlock, forward, request-info, reject, accept, decline, visit-otp, visit, treatment, complete, cancel, close, reopen, reassign, override).
 
+## File storage: Cloudflare R2
+
+Referral letters, prescriptions, lab reports, scans and visit photos live in a **private** R2 bucket. Browsers and the mobile app upload straight to R2 with a 15-minute signed link, and files open through 10-minute signed links. The bucket is never public.
+
+1. Cloudflare dashboard → **R2** → **Create bucket** (e.g. `susali-files`). Leave public access **off**. Pick the location hint nearest your users (Asia-Pacific).
+2. **R2 → Manage API tokens → Create API token** with *Object Read & Write*, limited to that bucket. Copy the Access Key ID and Secret Access Key.
+3. Set in the website's environment:
+   ```
+   R2_ACCOUNT_ID=<your Cloudflare account ID>
+   R2_ACCESS_KEY_ID=<from the token>
+   R2_SECRET_ACCESS_KEY=<from the token>
+   R2_BUCKET=susali-files
+   ```
+4. Bucket → **Settings → CORS policy → Add**, paste `r2-cors.json` (edit the origins to your domains). The mobile app needs no CORS; the website does.
+5. Check it: `node --env-file=.env scripts/r2-check.mjs https://app.susali.in`. It uploads, downloads and deletes a small test file through signed links and confirms CORS.
+
+Files already stored locally in `.uploads/` during development are not copied to R2. Re-run `npm run seed` on a fresh database to upload the demo PDFs to R2.
+
 ## Scheduled jobs
 
-Protected by `CRON_SECRET` (as `Authorization: Bearer …` or `?secret=…`). `vercel.json` schedules them on Vercel; elsewhere use any cron.
+Protected by `CRON_SECRET` (as `Authorization: Bearer …` or `?secret=…`).
 
-| Route | Schedule | Does |
+| Job | Route | What it does |
 |---|---|---|
-| `/api/cron/notifications` | every 5 min | sends queued WhatsApp/email, retries at 1, 5, 15 min, then marks Failed |
-| `/api/cron/escalations` | every 15 min | raises time-limit escalations once per stage; auto-closes completed referrals |
-| `/api/cron/daily-summary` | 03:30 UTC (9 AM IST) | daily summary email per role scope |
+| Notifications | `/api/cron/notifications` | sends queued WhatsApp/email, retries at 1, 5, 15 min, then marks Failed |
+| Escalations | `/api/cron/escalations` | raises time-limit escalations once per stage; auto-closes completed referrals |
+| Daily summary | `/api/cron/daily-summary` | 9 AM IST summary email per role scope |
 
-Notifications are also processed right after each request, so the cron is a safety net.
+**How they run on Vercel's free Hobby plan** (cron jobs limited to once a day):
+
+1. `vercel.json` schedules all three **daily** (03:30, 04:00, 04:30 UTC), which Hobby allows.
+2. **Background runs:** after any API request, the site runs whatever is due: the notification queue at most every minute and escalations at most every 15 minutes. A database lock (`Counter` rows `job:*`) makes sure only one server runs each job at a time. New alerts are also sent straight after the action that caused them. Set `BACKGROUND_JOBS=off` to disable.
+3. **Optional exact timing, free:** `.github/workflows/cron.yml` calls the routes every 5 / 15 minutes from GitHub Actions. Add the repository secrets `SUSALI_URL` and `CRON_SECRET`.
+
+On Vercel Pro you can instead change `vercel.json` back to `*/5 * * * *` (notifications) and `*/15 * * * *` (escalations).
 
 ## Additions and choices beyond the spec
 
@@ -130,7 +154,7 @@ Notifications are also processed right after each request, so the cron is a safe
 - [ ] `AUTH_SECRET`, `CRON_SECRET` set to long random values
 - [ ] MSG91: auth key, WhatsApp number, OTP template, and the WhatsApp templates listed in Settings approved
 - [ ] SMTP credentials and `MAIL_FROM`
-- [ ] Private S3 bucket (or Spaces) with CORS allowing `PUT` from `APP_URL`
+- [ ] Cloudflare R2 bucket (private), API token, `R2_*` set, CORS from `r2-cors.json`, `scripts/r2-check.mjs` passes
 - [ ] `APP_URL` set to the public HTTPS URL
 - [ ] Seed with `SEED_DEMO=0`, change the Super Admin password
 - [ ] Cron jobs scheduled

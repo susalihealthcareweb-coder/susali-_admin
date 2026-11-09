@@ -3,23 +3,30 @@ import path from "node:path";
 import { S3Client, PutObjectCommand, GetObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-// S3-compatible private storage with signed URLs. When S3_BUCKET is empty,
-// files go to ./.uploads on this machine (development only).
-export const s3Enabled = () => Boolean(process.env.S3_BUCKET);
+// Private file storage on Cloudflare R2 (S3-compatible) with signed URLs.
+// When R2_BUCKET is empty, files go to ./.uploads on this machine
+// (development only).
+export const cloudEnabled = () => Boolean(process.env.R2_BUCKET);
 const DOWNLOAD_TTL = 10 * 60; // 10 minutes
 const UPLOAD_TTL = 15 * 60;
 
+export function r2Config() {
+  const account = process.env.R2_ACCOUNT_ID;
+  return {
+    region: "auto", // required by the SDK, ignored by R2
+    forcePathStyle: true, // https://<account>.r2.cloudflarestorage.com/<bucket>/<key>
+    endpoint: process.env.R2_ENDPOINT || (account ? `https://${account}.r2.cloudflarestorage.com` : undefined),
+    credentials: { accessKeyId: process.env.R2_ACCESS_KEY_ID || "", secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || "" },
+    // Newer AWS SDKs add checksum headers to every request by default; keep
+    // them to the operations that need them so signed URLs stay R2-friendly.
+    requestChecksumCalculation: "WHEN_REQUIRED",
+    responseChecksumValidation: "WHEN_REQUIRED",
+  };
+}
+
 let s3;
 function client() {
-  if (!s3) {
-    s3 = new S3Client({
-      region: process.env.S3_REGION || "ap-south-1",
-      endpoint: process.env.S3_ENDPOINT || undefined,
-      credentials: process.env.S3_ACCESS_KEY
-        ? { accessKeyId: process.env.S3_ACCESS_KEY, secretAccessKey: process.env.S3_SECRET_KEY }
-        : undefined,
-    });
-  }
+  if (!s3) s3 = new S3Client(r2Config());
   return s3;
 }
 
@@ -34,10 +41,10 @@ export function localSig(parts) {
 export const LOCAL_ROOT = () => path.join(process.cwd(), ".uploads");
 
 export async function signUpload({ key, mimeType, size }) {
-  if (s3Enabled()) {
+  if (cloudEnabled()) {
     const url = await getSignedUrl(
       client(),
-      new PutObjectCommand({ Bucket: process.env.S3_BUCKET, Key: key, ContentType: mimeType, ContentLength: size }),
+      new PutObjectCommand({ Bucket: process.env.R2_BUCKET, Key: key, ContentType: mimeType, ContentLength: size }),
       { expiresIn: UPLOAD_TTL }
     );
     return { url, method: "PUT", headers: { "Content-Type": mimeType } };
@@ -49,11 +56,11 @@ export async function signUpload({ key, mimeType, size }) {
 }
 
 export async function signDownload(key, fileName, mimeType) {
-  if (s3Enabled()) {
+  if (cloudEnabled()) {
     return getSignedUrl(
       client(),
       new GetObjectCommand({
-        Bucket: process.env.S3_BUCKET,
+        Bucket: process.env.R2_BUCKET,
         Key: key,
         ResponseContentDisposition: `inline; filename="${String(fileName).replace(/"/g, "")}"`,
         ResponseContentType: mimeType,
