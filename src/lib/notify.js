@@ -1,6 +1,6 @@
 import { after } from "next/server";
 import { prisma } from "./prisma";
-import { msg91SendWhatsApp } from "./msg91";
+import { msg91SendWhatsApp, whatsappEnabled } from "./msg91";
 import { sendEmail, emailHtml } from "./mailer";
 import { getTemplateOverrides } from "./settings";
 import { STATUS, homeFor } from "./constants";
@@ -146,7 +146,7 @@ async function context(referral, extra = {}) {
     name: patientOf(r).relation === "Self" ? patientOf(r).name : `${patientOf(r).name} (${patientOf(r).relation} of ${r.employee?.fullName || snap.name})`,
     empCode: snap.employeeCode || r.employee?.employeeCode,
     company: company?.name || "",
-    hospital: r.hospital?.name || "the hospital",
+    hospital: r.hospital?.name || "a hospital to be assigned",
     hospitalAddress: r.hospital ? `${r.hospital.address}, ${r.hospital.city}` : "",
     status: STATUS[r.status]?.label || r.status,
     when: fmtDateTime(new Date()),
@@ -201,6 +201,7 @@ export async function notify(event, { referral, employee, extra } = {}) {
       const body = (def.patientBody || def.body)(c);
       const link = appUrl() + "/login";
       for (const ch of channels) {
+        if (ch === W && !whatsappEnabled()) continue;
         if (ch === E && !emp.email) continue;
         add({
           channel: ch,
@@ -219,7 +220,7 @@ export async function notify(event, { referral, employee, extra } = {}) {
     const title = def.title(c);
     for (const u of users) {
       for (const ch of channels) {
-        if (ch === W && u.muteWhatsapp) continue;
+        if (ch === W && (u.muteWhatsapp || !whatsappEnabled())) continue;
         if (ch === E && u.muteEmail) continue;
         const link = appUrl() + homeFor(u.role) + (c.r ? `/referrals/${c.r.id}` : extra?.path || "");
         add({

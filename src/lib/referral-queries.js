@@ -63,7 +63,9 @@ export async function listReferrals(me, opts = {}, { page = 1, take = 20, orderB
   const companyIds = [...new Set(rows.map((r) => r.companyId))];
   const companies = await prisma.company.findMany({ where: { id: { in: companyIds } }, select: { id: true, name: true } });
   const cmap = Object.fromEntries(companies.map((c) => [c.id, c.name]));
-  return { rows: rows.map((r) => ({ ...r, companyName: cmap[r.companyId] || "" })), total, page, pages: Math.max(1, Math.ceil(total / take)) };
+  // Cluster Managers don't see medical or financial details such as bills.
+  const hideBill = me.role === "CLUSTER_MANAGER";
+  return { rows: rows.map((r) => ({ ...r, companyName: cmap[r.companyId] || "", ...(hideBill ? { billTotal: null } : {}) })), total, page, pages: Math.max(1, Math.ceil(total / take)) };
 }
 
 // Verification Queue: oldest and most urgent first.

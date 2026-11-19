@@ -2,7 +2,7 @@ import Link from "next/link";
 import { StatusBadge, UrgencyBadge } from "./ui";
 import PatientLabel from "./PatientLabel";
 import Icon from "./Icon";
-import { fmtDateTime } from "@/lib/format";
+import { fmtDateTime, fmtRupees } from "@/lib/format";
 
 const URGENT_EDGE = { EMERGENCY: "before:bg-red-500", URGENT: "before:bg-amber-400", ROUTINE: "before:bg-transparent" };
 
@@ -23,7 +23,8 @@ export default function ReferralCard({ r, href, me, actions, waiting }) {
         </div>
         <dl className="mt-3 space-y-1.5 text-xs text-slate-600">
           <div className="flex items-center gap-2"><Icon name="building" size={14} className="shrink-0 text-gold-600" /><dd className="truncate">{r.companyName || "—"}</dd></div>
-          <div className="flex items-center gap-2"><Icon name="heart" size={14} className="shrink-0 text-gold-600" /><dd className="truncate">{r.hospital?.name || "Hospital not chosen"}{r.department ? ` · ${r.department.name}` : ""}</dd></div>
+          <div className="flex items-center gap-2"><Icon name="heart" size={14} className="shrink-0 text-gold-600" /><dd className="truncate">{r.hospital?.name || "Hospital to be assigned"}{r.department ? ` · ${r.department.name}` : ""}</dd></div>
+          {r.billTotal != null && <div className="flex items-center gap-2"><Icon name="referral" size={14} className="shrink-0 text-gold-600" /><dd className="truncate font-semibold text-brand-900">Bill {fmtRupees(r.billTotal)}</dd></div>}
           <div className="flex items-center gap-2"><Icon name="clock" size={14} className="shrink-0 text-gold-600" /><dd className="truncate">{waiting ? "Waiting since " : "Updated "}{fmtDateTime(waiting ? r.submittedAt || r.createdAt : r.updatedAt)}</dd></div>
         </dl>
         {r.status === "UNDER_VERIFICATION" && r.lockedBy && (

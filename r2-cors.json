@@ -1,6 +1,6 @@
 [
   {
-    "AllowedOrigins": ["https://app.susali.in", "http://localhost:3000", "http://localhost:3100"],
+    "AllowedOrigins": ["https://susali-admin.vercel.app", "https://app.susali.in", "http://localhost:3000", "http://localhost:3100"],
     "AllowedMethods": ["GET", "PUT"],
     "AllowedHeaders": ["Content-Type"],
     "ExposeHeaders": ["ETag"],

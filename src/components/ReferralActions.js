@@ -32,7 +32,7 @@ export default function ReferralActions({ role, me, referral: r, hospitals, depa
 
   if (isVerifier) {
     if (r.status === "HOSPITAL_DECLINED") {
-      blocks.push(<p key="declined" className="rounded-lg bg-orange-50 px-3 py-2 text-sm text-orange-800">The hospital declined. Choose another hospital below and accept to forward it again.</p>);
+      blocks.push(<p key="declined" className="rounded-lg bg-orange-50 px-3 py-2 text-sm text-orange-800">The hospital declined. Choose another hospital below (the one that declined is listed last) and accept to send it again.</p>);
     }
     if (canDecide) {
       blocks.push(<ForwardForm key="fwd" r={r} hospitals={hospitals} departments={departments} busy={busy} onSubmit={(d) => act("forward", d, "Verified and forwarded")} />);
@@ -111,36 +111,42 @@ export default function ReferralActions({ role, me, referral: r, hospitals, depa
 }
 
 function ForwardForm({ r, hospitals, departments, busy, onSubmit }) {
-  const [hospitalId, setHospitalId] = useState(r.hospitalId || "");
+  // `hospitals` arrive ranked; the first one marked `suggested` is SUSALI's pick.
+  const suggested = hospitals.find((h) => h.suggested);
   const [departmentId, setDepartmentId] = useState(r.departmentId || "");
+  const [hospitalId, setHospitalId] = useState(r.hospitalId || suggested?.id || "");
   const [notes, setNotes] = useState("");
   const h = hospitals.find((x) => x.id === hospitalId);
-  const depts = h?.departmentIds?.length ? departments.filter((d) => h.departmentIds.includes(d.id)) : departments;
   return (
     <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSubmit({ hospitalId, departmentId, notes }); }}>
       <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
-        Check: employee is active, the letter is readable and matches the details, the hospital and department are right, and there is no duplicate open referral.
-      </div>
-      <div>
-        <label className="label">Forward to hospital</label>
-        <select className="input" value={hospitalId} onChange={(e) => setHospitalId(e.target.value)} required>
-          <option value="">Choose…</option>
-          {hospitals.map((x) => <option key={x.id} value={x.id}>{x.name}{x.city ? `, ${x.city}` : ""}</option>)}
-        </select>
+        Check: employee is active, the referral letter number (and photo, if attached) is valid, the department is right, and there is no duplicate open referral.
       </div>
       <div>
         <label className="label">Department</label>
         <select className="input" value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} required>
           <option value="">Choose…</option>
-          {depts.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+          {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
         </select>
-        {h && departmentId && !depts.some((d) => d.id === departmentId) && <p className="mt-1 text-xs text-amber-700">This hospital does not list the selected department.</p>}
+      </div>
+      <div>
+        <label className="label">Send to hospital</label>
+        <select className="input" value={hospitalId} onChange={(e) => setHospitalId(e.target.value)} required>
+          <option value="">Choose…</option>
+          {hospitals.map((x) => (
+            <option key={x.id} value={x.id}>
+              {x.suggested ? "★ Suggested · " : ""}{x.name}, {x.city}{x.offersDepartment ? "" : " (department not listed)"}{x.declinedBefore ? " (declined this referral)" : ""} · {x.openReferrals} open
+            </option>
+          ))}
+        </select>
+        {suggested && <p className="mt-1 text-xs text-brand-700">★ SUSALI suggests <b>{suggested.name}</b>: offers this department{suggested.sameCity ? ", same city as the company" : ""}, {suggested.openReferrals} open referrals.</p>}
+        {h && !h.offersDepartment && <p className="mt-1 text-xs text-amber-700">This hospital does not list the selected department.</p>}
       </div>
       <div>
         <label className="label">Notes for the hospital (optional)</label>
         <textarea className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} />
       </div>
-      <button className="btn-primary w-full py-2.5" disabled={busy || !hospitalId || !departmentId}><span aria-hidden="true">✓</span> Accept & forward to hospital</button>
+      <button className="btn-primary w-full py-2.5" disabled={busy || !hospitalId || !departmentId}><span aria-hidden="true">✓</span> Accept &amp; send to hospital</button>
     </form>
   );
 }

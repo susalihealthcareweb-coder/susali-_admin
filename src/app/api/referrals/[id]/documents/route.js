@@ -5,6 +5,7 @@ import { requireApi } from "@/lib/session";
 import { getScopedReferral } from "@/lib/scope";
 import { audit } from "@/lib/audit";
 import { isRaiser } from "@/lib/referral-owner";
+import { refreshBillTotal } from "@/lib/bills";
 import { ALLOWED_MIME, PATIENT_DOC_CATEGORIES, HOSPITAL_DOC_CATEGORIES } from "@/lib/constants";
 
 export const GET = route(async (req, { id }) => {
@@ -26,7 +27,14 @@ export const POST = route(async (req, { id }) => {
     fileName: z.string().min(1).max(200),
     mimeType: z.string(),
     size: z.number().int().positive(),
+    amount: z.preprocess(
+      (v) => (typeof v === "string" ? (v.replace(/[₹,\s]/g, "") === "" ? undefined : Number(v.replace(/[₹,\s]/g, ""))) : v),
+      z.number({ error: "Enter the bill amount as a number." }).min(0, "Bill amount cannot be negative").max(100000000).optional().nullable(),
+    ),
   }));
+  if (input.category === "BILL" && (input.amount == null || Number.isNaN(input.amount))) {
+    throw new ApiError(400, "Enter the bill amount.");
+  }
   if (!input.key.startsWith(`referrals/${r.id}/`)) throw new ApiError(400, "Upload key does not match this referral.");
   if (!ALLOWED_MIME.includes(input.mimeType)) throw new ApiError(400, "File type not allowed.");
   const allowed = me.role === "HOSPITAL_USER" ? HOSPITAL_DOC_CATEGORIES : PATIENT_DOC_CATEGORIES;
@@ -41,8 +49,10 @@ export const POST = route(async (req, { id }) => {
       sizeBytes: input.size,
       uploadedById: me.kind === "staff" ? me.id : null,
       uploadedByPatient: me.kind === "patient",
+      amount: input.category === "BILL" ? input.amount : null,
     },
   });
-  await audit({ actor: me, action: "FILE_UPLOAD", entity: "Document", entityId: doc.id, after: { referralId: r.id, category: input.category, fileName: input.fileName }, req });
+  if (input.category === "BILL") await refreshBillTotal(r.id);
+  await audit({ actor: me, action: "FILE_UPLOAD", entity: "Document", entityId: doc.id, after: { referralId: r.id, category: input.category, fileName: input.fileName, ...(input.category === "BILL" ? { amount: input.amount } : {}) }, req });
   return ok({ document: doc }, { status: 201 });
 });

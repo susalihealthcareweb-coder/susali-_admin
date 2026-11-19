@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { route, body, ok, ApiError, pageParams } from "@/lib/api";
 import { requireApi } from "@/lib/session";
-import { listReferrals } from "@/lib/referral-queries";
+import { listReferrals, verificationQueue } from "@/lib/referral-queries";
+import { VERIFIER_ROLES } from "@/lib/constants";
 import { referralDraftSchema, v } from "@/lib/validators";
 import { nextDraftNo } from "@/lib/counter";
 import { audit } from "@/lib/audit";
@@ -10,6 +11,12 @@ import { beneficiaryFields } from "@/lib/family";
 export const GET = route(async (req) => {
   const me = await requireApi();
   const url = new URL(req.url);
+  // ?queue=1: the Verification Queue (most urgent and oldest first), for the mobile app.
+  if (url.searchParams.get("queue") === "1") {
+    if (!VERIFIER_ROLES.includes(me.role)) throw new ApiError(403, "You do not have access to the queue.");
+    const rows = await verificationQueue(me);
+    return ok({ rows, total: rows.length, page: 1, pages: 1 });
+  }
   const { page } = pageParams(url);
   const opts = Object.fromEntries(["status", "q", "hospitalId", "clusterId", "companyId", "from", "to"].map((k) => [k, url.searchParams.get(k) || undefined]));
   return ok(await listReferrals(me, opts, { page }));

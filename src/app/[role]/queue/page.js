@@ -31,7 +31,7 @@ export default async function Queue({ params }) {
                 me={me}
                 waiting
                 href={`${base}/referrals/${r.id}`}
-                actions={lockedByOther && role === "SUPPORT" ? <Link href={`${base}/referrals/${r.id}`} className="btn-ghost btn-sm w-full">View</Link> : <QueueActions id={r.id} href={`${base}/referrals/${r.id}`} hospitalName={r.hospital?.name} declined={r.status === "HOSPITAL_DECLINED"} />}
+                actions={lockedByOther && role === "SUPPORT" ? <Link href={`${base}/referrals/${r.id}`} className="btn-ghost btn-sm w-full">View</Link> : <QueueActions id={r.id} href={`${base}/referrals/${r.id}`} declined={r.status === "HOSPITAL_DECLINED"} />}
               />
             );
           })}

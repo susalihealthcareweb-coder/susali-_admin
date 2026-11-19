@@ -17,14 +17,17 @@ export const GET = route(async (req, { id }) => {
   // Cluster Managers see status, not medical documents.
   // Cluster Managers never see hospital documents; the one who raised the
   // referral sees the letters they uploaded.
-  if (me.role === "CLUSTER_MANAGER") r.documents = isRaiser(me, r) ? r.documents.filter((d) => PATIENT_DOC_CATEGORIES.includes(d.category)) : [];
+  if (me.role === "CLUSTER_MANAGER") {
+    r.documents = isRaiser(me, r) ? r.documents.filter((d) => PATIENT_DOC_CATEGORIES.includes(d.category)) : [];
+    r.billTotal = null;
+  }
   let duplicates = [];
   if (VERIFIER_ROLES.includes(me.role)) {
     duplicates = await prisma.referral.findMany({
       where: {
         id: { not: r.id },
         employeeId: r.employeeId,
-        hospitalId: r.hospitalId || undefined,
+        departmentId: r.departmentId || undefined,
         status: { notIn: ["DRAFT", "REJECTED", "CANCELLED", "CLOSED"] },
       },
       select: { id: true, referralNo: true, status: true, familyMemberId: true },

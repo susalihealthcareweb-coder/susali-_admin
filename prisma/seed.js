@@ -112,11 +112,11 @@ async function main() {
       });
     }
     await prisma.employee.upsert({
-      where: { mobile: "9000000010" },
+      where: { mobile: "9010561998" },
       update: {},
       create: {
         employeeCode: "DPT-1001", companyId: company.id, fullName: "Lakshmi Prasad", gender: "Female",
-        dateOfBirth: new Date("1988-04-12"), mobile: "9000000010", email: "lakshmi@example.com",
+        dateOfBirth: new Date("1988-04-12"), mobile: "9010561998", email: "lakshmi@example.com",
         department: "Assembly", designation: "Technician", bloodGroup: "B+", address: "Kukatpally, Hyderabad",
         emergencyName: "Srinivas Prasad", emergencyMobile: "9876500002",
       },
@@ -130,7 +130,7 @@ async function main() {
       superintendents: [sup1, sup2],
     });
     console.log("Demo staff (password Demo@1234): sudo@, support@, cm@, cm2@, hospital@susali.in");
-    console.log("Demo patient mobile: 9000000010 (dev OTP from DEV_OTP)");
+    console.log("Demo patient mobile: 9010561998 (dev OTP from DEV_OTP)");
   }
 }
 

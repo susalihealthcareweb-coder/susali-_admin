@@ -19,7 +19,7 @@ export default async function MyReferrals() {
               <Link href={`/patient/referrals/${r.id}`} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
                   <div className="font-mono text-sm font-medium">{r.status === "DRAFT" ? "Draft" : r.referralNo}</div>
-                  <div className="truncate text-xs text-slate-500">{r.patientRelation && r.patientRelation !== "Self" ? `${r.patientName} (${r.patientRelation}) · ` : ""}{r.hospital?.name || "Hospital not chosen"}{r.department ? ` · ${r.department.name}` : ""} · {fmtDate(r.submittedAt || r.createdAt)}</div>
+                  <div className="truncate text-xs text-slate-500">{r.patientRelation && r.patientRelation !== "Self" ? `${r.patientName} (${r.patientRelation}) · ` : ""}{r.hospital?.name || "Hospital to be assigned"}{r.department ? ` · ${r.department.name}` : ""} · {fmtDate(r.submittedAt || r.createdAt)}</div>
                 </div>
                 <StatusBadge status={r.status} />
               </Link>

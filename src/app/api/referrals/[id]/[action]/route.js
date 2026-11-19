@@ -24,10 +24,6 @@ const ACTIONS = {
     if (emp.approvalStatus === "PENDING") throw new ApiError(403, "This employee's registration is waiting for approval.");
     const missing = Object.entries(REQUIRED_FOR_SUBMIT).filter(([k]) => !r[k]).map(([, label]) => label);
     if (missing.length) throw new ApiError(400, `Please complete: ${missing.join(", ")}.`);
-    const letter = await prisma.document.count({ where: { referralId: r.id, category: "REFERRAL_LETTER", isDeleted: false } });
-    if (!letter) throw new ApiError(400, "Please upload the referral letter (photo or PDF).");
-    const hospital = await prisma.hospital.findUnique({ where: { id: r.hospitalId } });
-    if (!hospital?.isActive) throw new ApiError(400, "The selected hospital is not available. Choose another.");
     const company = await prisma.company.findUnique({ where: { id: emp.companyId }, select: { name: true } });
     const who = await beneficiaryFields(emp, r.familyMemberId);
     const snapshot = await patientSnapshot(emp, company?.name, who.familyMemberId);
@@ -63,9 +59,11 @@ const ACTIONS = {
     const d = z.object({ hospitalId: v.optObjectId, departmentId: v.optObjectId, notes: v.optStr }).parse(input);
     const hospitalId = d.hospitalId || r.hospitalId;
     const departmentId = d.departmentId || r.departmentId;
+    if (!hospitalId) throw new ApiError(400, "Choose the hospital to send this referral to.");
+    if (!departmentId) throw new ApiError(400, "Choose the department.");
     const hospital = await prisma.hospital.findUnique({ where: { id: hospitalId } });
     if (!hospital?.isActive) throw new ApiError(400, "Choose an active hospital.");
-    const changed = hospitalId !== r.hospitalId ? ` (hospital changed to ${hospital.name})` : "";
+    const changed = !r.hospitalId ? "" : hospitalId !== r.hospitalId ? ` (hospital changed to ${hospital.name})` : "";
     const updated = await changeStatus({
       referral: r, to: "FORWARDED", me, req,
       data: { hospitalId, departmentId, verifierNotes: d.notes, verifiedById: me.id, lockedById: null, forwardedAt: new Date(), declineReason: null, escalations: [] },

@@ -86,10 +86,11 @@ export const DOC_CATEGORIES = {
   LAB_REPORT: "Lab report",
   SCAN: "Scan / Imaging",
   DISCHARGE_SUMMARY: "Discharge summary",
+  BILL: "Bill / invoice",
   OTHER: "Other",
 };
 export const PATIENT_DOC_CATEGORIES = ["REFERRAL_LETTER", "PREVIOUS_REPORT"];
-export const HOSPITAL_DOC_CATEGORIES = ["PRESCRIPTION", "LAB_REPORT", "SCAN", "DISCHARGE_SUMMARY", "OTHER"];
+export const HOSPITAL_DOC_CATEGORIES = ["PRESCRIPTION", "LAB_REPORT", "SCAN", "DISCHARGE_SUMMARY", "BILL", "OTHER"];
 
 export const ALLOWED_MIME = ["application/pdf", "image/jpeg", "image/png", "application/zip", "application/x-zip-compressed"];
 

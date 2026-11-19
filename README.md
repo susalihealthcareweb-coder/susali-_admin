@@ -25,7 +25,7 @@ Open http://localhost:3000.
 | Support Team | `support@susali.in` / `Demo@1234` |
 | Cluster Manager | `cm@susali.in` / `Demo@1234` |
 | Hospital User | `hospital@susali.in` / `Demo@1234` |
-| Patient | mobile `9000000010`, OTP = `DEV_OTP` (default `123456`) |
+| Patient | mobile `9010561998`, OTP = `DEV_OTP` (default `123456`) |
 
 ### Who can do what
 
@@ -42,7 +42,7 @@ Everyone logs in at `/login`: the **Mobile OTP** side is for employees, the **Em
 
 ### Family members
 
-An employee's card covers their family. Patients add family members under **Profile → My family** (spouse, children, parents and so on). When raising a referral they choose **who it is for**: themselves or a family member. Every list, alert and export shows the patient's name and relation, plus the card holder. Seeded example: Lakshmi Prasad (`9000000010`) has a spouse, son and mother.
+An employee's card covers their family. Patients add family members under **Profile → My family** (spouse, children, parents and so on). When raising a referral they choose **who it is for**: themselves or a family member. Every list, alert and export shows the patient's name and relation, plus the card holder. Seeded example: Lakshmi Prasad (`9010561998`) has a spouse, son and mother.
 
 ### Branding
 
@@ -113,7 +113,7 @@ Referral letters, prescriptions, lab reports, scans and visit photos live in a *
    R2_BUCKET=susali-files
    ```
 4. Bucket → **Settings → CORS policy → Add**, paste `r2-cors.json` (edit the origins to your domains). The mobile app needs no CORS; the website does.
-5. Check it: `node --env-file=.env scripts/r2-check.mjs https://app.susali.in`. It uploads, downloads and deletes a small test file through signed links and confirms CORS.
+5. Check it: `node --env-file=.env scripts/r2-check.mjs https://susali-admin.vercel.app`. It uploads, downloads and deletes a small test file through signed links and confirms CORS.
 
 Files already stored locally in `.uploads/` during development are not copied to R2. Re-run `npm run seed` on a fresh database to upload the demo PDFs to R2.
 

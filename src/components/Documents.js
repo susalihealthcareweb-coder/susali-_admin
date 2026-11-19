@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { api, run, uploadFile } from "./api-client";
 import { toast } from "./Toaster";
 import { DOC_CATEGORIES } from "@/lib/constants";
-import { fmtBytes, fmtDateTime } from "@/lib/format";
+import { fmtBytes, fmtDateTime, fmtRupees } from "@/lib/format";
 
 // Lists documents grouped by category; files open through a 10-minute link.
 export function DocumentList({ documents, deletable, group = true }) {
@@ -37,7 +37,12 @@ export function DocumentList({ documents, deletable, group = true }) {
     <div className="space-y-4">
       {groups.map(([cat, docs]) => (
         <div key={cat}>
-          {cat && <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">{DOC_CATEGORIES[cat]}</div>}
+          {cat && (
+            <div className="mb-1.5 flex items-baseline justify-between text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <span>{DOC_CATEGORIES[cat]}</span>
+              {cat === "BILL" && <span className="normal-case tracking-normal text-brand-800">Total {fmtRupees(docs.reduce((s, d) => s + (d.amount || 0), 0))}</span>}
+            </div>
+          )}
           <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
             {docs.map((d) => (
               <li key={d.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
@@ -46,6 +51,7 @@ export function DocumentList({ documents, deletable, group = true }) {
                   <div className="truncate text-sm font-medium text-slate-800">{d.fileName}</div>
                   <div className="text-xs text-slate-500">{fmtBytes(d.sizeBytes)} · {fmtDateTime(d.createdAt)}{d.uploadedBy?.name ? ` · ${d.uploadedBy.name}` : d.uploadedByPatient ? " · Patient" : ""}</div>
                 </div>
+                {d.category === "BILL" && <span className="rounded-lg bg-gold-50 px-2.5 py-1 text-sm font-semibold tabular-nums text-brand-900 ring-1 ring-gold-200">{fmtRupees(d.amount)}</span>}
                 <div className="flex gap-1">
                   <button className="btn-ghost btn-sm" disabled={busy === d.id} onClick={() => open(d)}>View</button>
                   <button className="btn-ghost btn-sm" disabled={busy === d.id} onClick={() => open(d, true)}>Download</button>
@@ -64,10 +70,14 @@ export function DocumentList({ documents, deletable, group = true }) {
 export function Uploader({ referralId, categories, maxMb = 20, onDone, compact }) {
   const router = useRouter();
   const [category, setCategory] = useState(categories[0]);
+  const [amount, setAmount] = useState("");
   const [busy, setBusy] = useState(false);
+  const isBill = category === "BILL";
+  const amountOk = !isBill || (amount !== "" && Number(amount) >= 0);
   const [progress, setProgress] = useState("");
   const onFiles = async (files) => {
     if (!files?.length) return;
+    if (!amountOk) return toast("Enter the bill amount first.", "error");
     setBusy(true);
     let n = 0;
     try {
@@ -75,10 +85,11 @@ export function Uploader({ referralId, categories, maxMb = 20, onDone, compact }
         if (file.size > maxMb * 1024 * 1024) throw new Error(`${file.name} is larger than ${maxMb} MB.`);
         setProgress(`Uploading ${file.name}…`);
         const key = await uploadFile(file, { purpose: "referral", referralId, category });
-        await api(`/api/referrals/${referralId}/documents`, { method: "POST", data: { key, category, fileName: file.name, mimeType: file.type || "application/octet-stream", size: file.size } });
+        await api(`/api/referrals/${referralId}/documents`, { method: "POST", data: { key, category, fileName: file.name, mimeType: file.type || "application/octet-stream", size: file.size, ...(isBill ? { amount: Number(amount) } : {}) } });
         n++;
       }
-      toast(n === 1 ? "File uploaded" : `${n} files uploaded`);
+      toast(isBill ? `Bill of ${fmtRupees(Number(amount))} uploaded` : n === 1 ? "File uploaded" : `${n} files uploaded`);
+      if (isBill) setAmount("");
     } catch (e) {
       toast(e.message, "error");
     }
@@ -98,12 +109,18 @@ export function Uploader({ referralId, categories, maxMb = 20, onDone, compact }
             </select>
           </div>
         )}
-        <label className={`btn-secondary cursor-pointer ${busy ? "pointer-events-none opacity-50" : ""}`}>
+        {isBill && (
+          <div>
+            <label className="label" htmlFor="billAmount">Bill amount (₹) *</label>
+            <input id="billAmount" className="input w-40 tabular-nums" inputMode="decimal" placeholder="e.g. 12500" value={amount} onChange={(e) => setAmount(e.target.value.replace(/[^0-9.]/g, ""))} />
+          </div>
+        )}
+        <label className={`btn-secondary cursor-pointer ${busy || !amountOk ? "pointer-events-none opacity-50" : ""}`}>
           {busy ? "Uploading…" : categories.length === 1 ? `Upload ${DOC_CATEGORIES[categories[0]].toLowerCase()}` : "Choose files"}
           <input type="file" className="hidden" multiple accept=".pdf,.jpg,.jpeg,.png,.zip,application/pdf,image/jpeg,image/png" capture={undefined} onChange={(e) => { onFiles([...e.target.files]); e.target.value = ""; }} />
         </label>
       </div>
-      <p className="mt-2 text-xs text-slate-500">{progress || `PDF, JPG or PNG${categories.includes("SCAN") ? ", or DICOM as ZIP" : ""}, up to ${maxMb} MB each.`}</p>
+      <p className="mt-2 text-xs text-slate-500">{progress || (isBill ? "Enter the amount, then choose the bill (PDF, JPG or PNG). Each bill is added to the total." : `PDF, JPG or PNG${categories.includes("SCAN") ? ", or DICOM as ZIP" : ""}, up to ${maxMb} MB each.`)}</p>
     </div>
   );
 }

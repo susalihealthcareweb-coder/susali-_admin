@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Dialog from "./Dialog";
 import { api, run } from "./api-client";
+import { toast } from "./Toaster";
 import { VisitFields } from "./CompanyForm";
 import { GENDERS, BLOOD_GROUPS } from "@/lib/constants";
 import { toInputDate } from "@/lib/format";
@@ -40,16 +41,20 @@ export function CompanyStatusToggle({ id, isActive }) {
 
 const EMPTY = { employeeCode: "", fullName: "", gender: "Male", dateOfBirth: "", mobile: "", email: "", aadhaarLast4: "", department: "", designation: "", bloodGroup: "", address: "", emergencyName: "", emergencyMobile: "" };
 
-export function EmployeeDialog({ companyId, employee, trigger }) {
+// Add or edit an employee. Outside a company page, pass `companies` and the
+// person picks which company the employee belongs to.
+export function EmployeeDialog({ companyId, companies, employee, trigger }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [company, setCompany] = useState(companyId || (companies?.length === 1 ? companies[0].id : ""));
   const [busy, setBusy] = useState(false);
   const [v, setV] = useState(() => (employee ? { ...EMPTY, ...Object.fromEntries(Object.keys(EMPTY).map((k) => [k, employee[k] ?? ""])), dateOfBirth: toInputDate(employee.dateOfBirth) } : EMPTY));
   const set = (k) => (e) => setV({ ...v, [k]: e.target.value });
   const save = async (e) => {
     e.preventDefault();
     setBusy(true);
-    const ok = await run(() => api(employee ? `/api/employees/${employee.id}` : `/api/companies/${companyId}/employees`, { method: employee ? "PATCH" : "POST", data: v }), employee ? "Employee saved" : "Employee added; WhatsApp welcome queued");
+    if (!employee && !company) { setBusy(false); return toast("Choose the company first.", "error"); }
+    const ok = await run(() => api(employee ? `/api/employees/${employee.id}` : `/api/companies/${company}/employees`, { method: employee ? "PATCH" : "POST", data: v }), employee ? "Employee saved" : "Employee added; WhatsApp welcome queued");
     setBusy(false);
     if (ok) { setOpen(false); if (!employee) setV(EMPTY); router.refresh(); }
   };
@@ -61,6 +66,15 @@ export function EmployeeDialog({ companyId, employee, trigger }) {
       <span onClick={() => setOpen(true)}>{trigger || <button className="btn-primary">Add employee</button>}</span>
       <Dialog open={open} onClose={() => setOpen(false)} title={employee ? "Edit employee" : "Add employee"} wide footer={<><button className="btn-secondary" onClick={() => setOpen(false)}>Back</button><button className="btn-primary" form="f-emp" disabled={busy}>{busy ? "Saving…" : "Save"}</button></>}>
         <form id="f-emp" onSubmit={save} className="grid gap-3 sm:grid-cols-2">
+          {!employee && !companyId && companies && (
+            <div className="sm:col-span-2">
+              <label className="label">Company *</label>
+              <select className="input" required value={company} onChange={(e) => setCompany(e.target.value)}>
+                <option value="">Choose the company…</option>
+                {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+          )}
           {F("employeeCode", "Employee ID", { required: true })}
           {F("fullName", "Full name", { required: true })}
           <div><label className="label">Gender *</label><select className="input" value={v.gender} onChange={set("gender")}>{GENDERS.map((g) => <option key={g}>{g}</option>)}</select></div>

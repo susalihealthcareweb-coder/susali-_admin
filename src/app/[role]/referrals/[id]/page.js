@@ -4,6 +4,7 @@ import { staffPage } from "@/lib/page";
 import { prisma } from "@/lib/prisma";
 import { referralScope } from "@/lib/scope";
 import { referralDetail } from "@/lib/referral-queries";
+import { suggestHospitals } from "@/lib/hospital-suggest";
 import { getSettings } from "@/lib/settings";
 import { PageHeader, StatusBadge, UrgencyBadge, Section, Field, Badge } from "@/components/ui";
 import Timeline from "@/components/Timeline";
@@ -12,7 +13,7 @@ import ReferralActions from "@/components/ReferralActions";
 import ReferralForm from "@/components/ReferralForm";
 import PatientCancel from "@/components/PatientCancel";
 import { patientMasters } from "@/lib/patient-masters";
-import { fmtDate, fmtDateTime, ageFrom, patientOf } from "@/lib/format";
+import { fmtDate, fmtDateTime, ageFrom, patientOf, fmtRupees } from "@/lib/format";
 import { HOSPITAL_DOC_CATEGORIES, PATIENT_DOC_CATEGORIES, VERIFIER_ROLES, STATUS } from "@/lib/constants";
 
 export const metadata = { title: "Referral" };
@@ -42,10 +43,11 @@ export default async function ReferralPage({ params }) {
   const settings = await getSettings();
 
   const [hospitals, departments, verifiers, duplicates] = await Promise.all([
-    isVerifier ? prisma.hospital.findMany({ where: { isActive: true }, select: { id: true, name: true, city: true, departmentIds: true }, orderBy: { name: "asc" } }) : [],
+    // Ranked by SUSALI's suggestion: offers the department, same city, lightest load.
+    isVerifier ? suggestHospitals(r) : [],
     isVerifier ? prisma.department.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true } }) : [],
     ["SUPER_ADMIN", "SUDO_ADMIN"].includes(role) ? prisma.user.findMany({ where: { isActive: true, role: { in: VERIFIER_ROLES } }, select: { id: true, name: true }, orderBy: { name: "asc" } }) : [],
-    isVerifier ? prisma.referral.findMany({ where: { id: { not: r.id }, employeeId: r.employeeId, hospitalId: r.hospitalId || undefined, status: { notIn: ["DRAFT", "REJECTED", "CANCELLED", "CLOSED"] } }, select: { id: true, referralNo: true, status: true, familyMemberId: true } }).then((x) => x.filter((d) => (d.familyMemberId || null) === (r.familyMemberId || null))) : [],
+    isVerifier ? prisma.referral.findMany({ where: { id: { not: r.id }, employeeId: r.employeeId, departmentId: r.departmentId || undefined, status: { notIn: ["DRAFT", "REJECTED", "CANCELLED", "CLOSED"] } }, select: { id: true, referralNo: true, status: true, familyMemberId: true } }).then((x) => x.filter((d) => (d.familyMemberId || null) === (r.familyMemberId || null))) : [],
   ]);
 
   const letter = r.documents.filter((d) => PATIENT_DOC_CATEGORIES.includes(d.category));
@@ -68,7 +70,7 @@ export default async function ReferralPage({ params }) {
       )}
       {isVerifier && duplicates.length > 0 && (
         <div className="rounded-lg bg-red-50 px-4 py-2.5 text-sm text-red-800">
-          Possible duplicate: this patient has another open referral to the same hospital —{" "}
+          Possible duplicate: this patient has another open referral for the same department —{" "}
           {duplicates.map((d, i) => <span key={d.id}>{i ? ", " : ""}<Link className="underline" href={`${base}/referrals/${d.id}`}>{d.referralNo}</Link> ({STATUS[d.status].label})</span>)}
         </div>
       )}
@@ -80,15 +82,10 @@ export default async function ReferralPage({ params }) {
         <div className="space-y-4 rounded-2xl bg-gradient-to-br from-gold-50 to-white p-4 ring-1 ring-gold-200 sm:p-5">
           <div>
             <h2 className="font-display text-xl font-bold text-brand-900">{r.status === "INFO_REQUESTED" ? "Update and resubmit" : "Complete this referral"}</h2>
-            <p className="text-sm text-slate-600">{r.status === "INFO_REQUESTED" ? `Support asked: ${r.infoRequestNote}` : `You are filling this in for ${emp.fullName}. Upload the referral letter, then submit.`}</p>
+            <p className="text-sm text-slate-600">{r.status === "INFO_REQUESTED" ? `Support asked: ${r.infoRequestNote}` : `You are filling this in for ${emp.fullName}. SUSALI assigns the hospital after verification.`}</p>
           </div>
-          <Section title="Referral letter and earlier reports">
-            <div className="space-y-3">
-              <Uploader referralId={r.id} categories={["REFERRAL_LETTER", "PREVIOUS_REPORT"]} maxMb={settings.maxFileMb} compact />
-              <DocumentList documents={JSON.parse(JSON.stringify(letter))} deletable />
-            </div>
-          </Section>
-          <ReferralForm referral={JSON.parse(JSON.stringify(r))} masters={masters} hasLetter={letter.some((d) => d.category === "REFERRAL_LETTER")} canSubmit family={family} holder={{ name: emp.fullName, staff: true }} basePath={`${base}/referrals`} familyHref={`${base}/employees/${emp.id}#family`} />
+          {letter.length > 0 && <Section title="Letters attached"><DocumentList documents={JSON.parse(JSON.stringify(letter))} deletable group={false} /></Section>}
+          <ReferralForm referral={JSON.parse(JSON.stringify(r))} masters={masters} hasLetter={letter.some((d) => d.category === "REFERRAL_LETTER")} family={family} holder={{ name: emp.fullName, staff: true }} basePath={`${base}/referrals`} familyHref={`${base}/employees/${emp.id}#family`} />
           <PatientCancel id={r.id} draft={r.status === "DRAFT"} back={`${base}/referrals`} />
         </div>
       )}
@@ -124,7 +121,7 @@ export default async function ReferralPage({ params }) {
               <Field label="Superintendent / doctor">{r.superintendentName}</Field>
               <Field label="Referral letter no">{r.referralLetterNo}</Field>
               <Field label="Referral date">{fmtDate(r.referralDate)}</Field>
-              <Field label="Referred to hospital">{r.hospital?.name}</Field>
+              <Field label="Hospital">{r.hospital?.name || <span className="text-amber-700">To be assigned by SUSALI</span>}</Field>
               <Field label="Department">{r.department?.name}</Field>
               <Field label="Submitted">{fmtDateTime(r.submittedAt)}</Field>
             </dl>
@@ -155,7 +152,7 @@ export default async function ReferralPage({ params }) {
                 <DocumentList documents={JSON.parse(JSON.stringify(letter))} />
               </Section>
               {(role !== "SUPPORT" || medical.length > 0) && (
-                <Section title="Hospital documents">
+                <Section title="Hospital documents" actions={r.billTotal != null ? <span className="rounded-full bg-gold-50 px-3 py-1 text-sm font-semibold text-brand-900 ring-1 ring-gold-200">Total bill {fmtRupees(r.billTotal)}</span> : null}>
                   <div className="space-y-4">
                     {hospitalCanUpload && <Uploader referralId={r.id} categories={HOSPITAL_DOC_CATEGORIES} maxMb={settings.maxFileMb} />}
                     <DocumentList documents={JSON.parse(JSON.stringify(medical))} deletable={hospitalCanUpload && r.status !== "COMPLETED"} />

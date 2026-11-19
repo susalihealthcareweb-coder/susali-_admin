@@ -242,7 +242,7 @@ function VerifyStep({ v, setV, onDone }) {
             <span className="label">Enter the 6-digit code</span>
             <OtpInput value={otp} onChange={(x) => { setOtp(x); setError(""); }} autoFocus error={Boolean(error)} disabled={busy} />
             <div className="mt-2 flex justify-between text-xs text-slate-500">
-              <span>{dev ? "Development mode: use DEV_OTP from .env." : "Valid for 5 minutes."}</span>
+              <span>{dev ? "SMS codes are not active yet. Use the temporary code from SUSALI." : "Valid for 5 minutes."}</span>
               <button type="button" className="link disabled:text-slate-400 disabled:no-underline" disabled={wait > 0 || busy} onClick={send}>{wait > 0 ? `Resend in ${wait}s` : "Resend"}</button>
             </div>
           </div>

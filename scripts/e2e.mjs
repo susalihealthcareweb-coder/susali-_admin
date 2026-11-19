@@ -59,10 +59,10 @@ const admin = new Client("super admin");
 
 // Patient login
 check("unknown mobile is refused", await patient.req("/api/auth/otp/send", { method: "POST", json: { mobile: "9111111111" } }), is(404));
-let r = await patient.req("/api/auth/otp/send", { method: "POST", json: { mobile: "9000000010" } });
+let r = await patient.req("/api/auth/otp/send", { method: "POST", json: { mobile: "9010561998" } });
 check("patient OTP sent", r, is(200));
-check("wrong OTP rejected", await patient.req("/api/auth/otp/verify", { method: "POST", json: { mobile: "9000000010", otp: "000000" } }), is(401));
-r = await patient.req("/api/auth/otp/verify", { method: "POST", json: { mobile: "9000000010", otp: OTP } });
+check("wrong OTP rejected", await patient.req("/api/auth/otp/verify", { method: "POST", json: { mobile: "9010561998", otp: "000000" } }), is(401));
+r = await patient.req("/api/auth/otp/verify", { method: "POST", json: { mobile: "9010561998", otp: OTP } });
 check("patient OTP verified", r, is(200));
 check("patient consent", await patient.req("/api/patient/consent", { method: "POST" }), is(200));
 
@@ -99,15 +99,14 @@ r = await patient.req(`/api/referrals/${id}`, {
   },
 });
 check("draft updated", r, is(200));
-check("submit blocked without letter", await patient.req(`/api/referrals/${id}/submit`, { method: "POST", json: {} }), (x) => x.status === 400 && /letter/i.test(x.data.error));
 
-async function upload(client, category, name, type, content) {
+async function upload(client, category, name, type, content, extra = {}) {
   const buf = Buffer.from(content);
   const s = await client.req("/api/uploads/sign", { method: "POST", json: { purpose: "referral", referralId: id, category, fileName: name, mimeType: type, size: buf.length } });
   if (s.status !== 200) return s;
   const put = await fetch(s.data.url.startsWith("http") ? s.data.url : BASE + s.data.url, { method: "PUT", headers: s.data.headers, body: buf });
   if (!put.ok) return { status: put.status, data: await put.text() };
-  return client.req(`/api/referrals/${id}/documents`, { method: "POST", json: { key: s.data.key, category, fileName: name, mimeType: type, size: buf.length } });
+  return client.req(`/api/referrals/${id}/documents`, { method: "POST", json: { key: s.data.key, category, fileName: name, mimeType: type, size: buf.length, ...extra } });
 }
 check("bad file type refused", await patient.req("/api/uploads/sign", { method: "POST", json: { purpose: "referral", referralId: id, category: "REFERRAL_LETTER", fileName: "x.exe", mimeType: "application/x-msdownload", size: 10 } }), is(400));
 check("patient uploads letter", await upload(patient, "REFERRAL_LETTER", "letter.pdf", "application/pdf", "%PDF-1.4 referral letter"), is(201));
@@ -145,6 +144,15 @@ check("treatment started", await hospital.req(`/api/referrals/${id}/treatment`, 
 check("complete blocked without prescription", await hospital.req(`/api/referrals/${id}/complete`, { method: "POST", json: {} }), is(400));
 check("hospital uploads prescription", await upload(hospital, "PRESCRIPTION", "rx.pdf", "application/pdf", "%PDF-1.4 rx"), is(201));
 check("hospital uploads lab report", await upload(hospital, "LAB_REPORT", "ecg.png", "image/png", "PNGDATA"), is(201));
+check("bill without amount refused", await upload(hospital, "BILL", "bill.pdf", "application/pdf", "%PDF-1.4 bill"), is(400));
+r = await upload(hospital, "BILL", "bill-1.pdf", "application/pdf", "%PDF-1.4 bill1", { amount: 12500.5 });
+check("hospital uploads bill with amount", r, (x) => x.status === 201 && x.data.document?.amount === 12500.5);
+const bill1 = r.data.document?.id;
+check("hospital uploads second bill", await upload(hospital, "BILL", "bill-2.pdf", "application/pdf", "%PDF-1.4 bill2", { amount: "3,000" }), is(201));
+check("bill total is the sum", await hospital.req(`/api/referrals/${id}`), (x) => x.data.referral?.billTotal === 15500.5);
+check("patient sees bill total", await patient.req(`/api/referrals/${id}`), (x) => x.data.referral?.billTotal === 15500.5 && x.data.referral.documents.some((d) => d.category === "BILL" && d.amount === 12500.5));
+check("hospital deletes a bill", await hospital.req(`/api/documents/${bill1}`, { method: "DELETE" }), is(200));
+check("bill total updates after delete", await hospital.req(`/api/referrals/${id}`), (x) => x.data.referral?.billTotal === 3000);
 check("hospital completes", await hospital.req(`/api/referrals/${id}/complete`, { method: "POST", json: {} }), (x) => x.data.referral?.status === "COMPLETED");
 
 // Patient views records
@@ -191,7 +199,7 @@ const newbie = new Client("new employee");
 const mob = "8" + String(Date.now()).slice(-9);
 const comp = (await newbie.req("/api/public/companies?q=Deccan")).data.rows[0];
 check("company search works", comp, (c) => Boolean(c?.id));
-check("registration OTP refused for existing number", await newbie.req("/api/auth/register/otp", { method: "POST", json: { mobile: "9000000010" } }), is(409));
+check("registration OTP refused for existing number", await newbie.req("/api/auth/register/otp", { method: "POST", json: { mobile: "9010561998" } }), is(409));
 check("registration OTP sent", await newbie.req("/api/auth/register/otp", { method: "POST", json: { mobile: mob } }), is(200));
 const reg = { companyId: comp.id, employeeCode: "SELF-" + mob.slice(-4), fullName: "Ravi Teja", gender: "Male", dateOfBirth: "1992-05-20", mobile: mob, otp: OTP, consent: true };
 check("registration needs consent", await newbie.req("/api/auth/register", { method: "POST", json: { ...reg, consent: false } }), is(400));
@@ -202,8 +210,24 @@ const pend = (await cm.req(`/api/companies/${comp.id}/employees?q=${mob}`)).data
 check("CM sees pending registration", pend?.approvalStatus, (x) => x === "PENDING");
 check("support cannot approve", await support.req(`/api/employees/${pend.id}/approval`, { method: "POST", json: { decision: "APPROVE" } }), is(403));
 check("CM approves", await cm.req(`/api/employees/${pend.id}/approval`, { method: "POST", json: { decision: "APPROVE" } }), is(200));
+check("employee list filters waiting approval", (await cm.req("/api/employees?status=PENDING")).data.rows, (rows) => Array.isArray(rows) && rows.every((e) => e.approvalStatus === "PENDING"));
 check("approved employee can raise referral", await newbie.req("/api/referrals", { method: "POST", json: {} }), is(201));
 check("approval cannot be repeated", await cm.req(`/api/employees/${pend.id}/approval`, { method: "POST", json: { decision: "REJECT", note: "x" } }), is(409));
+
+// Short flow: only letter number + department; SUSALI picks the hospital
+{
+  const cardio = depts.find((d) => d.name === "Cardiology");
+  const q = await patient.req("/api/referrals", { method: "POST", json: { referralLetterNo: "SHORT/1", departmentId: cardio.id } });
+  check("draft with only letter number and department", q, (x) => x.status === 201 && !x.data.referral.hospitalId);
+  const qid2 = q.data.referral.id;
+  check("submits without hospital or letter photo", await patient.req(`/api/referrals/${qid2}/submit`, { method: "POST", json: {} }), (x) => x.data.referral?.status === "SUBMITTED");
+  const sug = await support.req(`/api/referrals/${qid2}/suggestions`);
+  const top = sug.data.rows?.[0];
+  check("hospital suggestion offers the department", top, (t) => Boolean(t?.suggested && t.offersDepartment));
+  check("patient cannot see suggestions", await patient.req(`/api/referrals/${qid2}/suggestions`), is(403));
+  check("accept needs a hospital", await support.req(`/api/referrals/${qid2}/forward`, { method: "POST", json: {} }), (x) => x.status === 400 && /hospital/i.test(x.data.error));
+  check("accept with suggested hospital", await support.req(`/api/referrals/${qid2}/forward`, { method: "POST", json: { hospitalId: top.id } }), (x) => x.data.referral?.status === "FORWARDED" && x.data.referral.hospitalId === top.id);
+}
 
 // Sudo Admin may add but not deactivate; Super Admin may.
 const sudo = new Client("sudo admin");
@@ -230,7 +254,7 @@ check("support rejects without locking first", await support.req(`/api/referrals
 // Cluster Manager: no companies, no reports; raises referrals for employees
 check("CM cannot add a company", await cm.req("/api/companies", { method: "POST", json: { name: "X Ltd", address: "Road", city: "Hyd", state: "TS", pincode: "500001" } }), is(403));
 check("CM cannot export reports", (await cm.req("/api/reports/export?format=xlsx", { raw: true })).status, (st) => st === 403);
-const lak = (await cm.req(`/api/companies/${comp.id}/employees?q=9000000010`)).data.rows[0];
+const lak = (await cm.req(`/api/companies/${comp.id}/employees?q=9010561998`)).data.rows[0];
 const fam = await cm.req(`/api/employees/${lak.id}/family`, { method: "POST", json: { fullName: "CM Added Niece", relation: "Other", gender: "Female", dateOfBirth: "2010-06-01" } });
 check("CM adds family on employee card", fam, is(201));
 r = await cm.req("/api/referrals", { method: "POST", json: { employeeId: lak.id, familyMemberId: fam.data.member.id, urgency: "URGENT" } });
@@ -250,7 +274,7 @@ check("used master cannot be deleted", await admin.req(`/api/admin/dispensaries/
 check("employee with referrals cannot be deleted", await admin.req(`/api/employees/${lak.id}`, { method: "DELETE" }), is(409));
 
 // Pages render for each role
-for (const [c, path] of [[admin, "/super-admin"], [admin, "/super-admin/referrals"], [admin, `/super-admin/referrals/${id}`], [admin, "/super-admin/messages"], [admin, "/super-admin/settings"], [admin, "/super-admin/audit"], [admin, "/super-admin/masters/hospitals"], [admin, "/super-admin/users"], [support, "/support"], [support, "/support/queue"], [support, "/support/referrals"], [sudo, "/sudo-admin/queue"], [admin, "/super-admin/queue"], [cm, "/cluster-manager"], [cm, "/cluster-manager/companies"], [cm, "/cluster-manager/registrations"], [cm, "/cluster-manager/referrals/new"], [cm, `/cluster-manager/referrals/new?employee=${lak.id}`], [cm, `/cluster-manager/employees/${lak.id}`], [cm, `/cluster-manager/referrals/${cmRef}`], [admin, `/super-admin/employees/${lak.id}`], [admin, "/super-admin/registrations"], [cm, `/cluster-manager/referrals/${id}`], [hospital, "/hospital"], [hospital, "/hospital/referrals?tab=completed"], [patient, "/patient"], [patient, `/patient/referrals/${id}`], [patient, "/patient/records"], [patient, "/patient/referrals/new"]]) {
+for (const [c, path] of [[admin, "/super-admin"], [admin, "/super-admin/referrals"], [admin, `/super-admin/referrals/${id}`], [admin, "/super-admin/messages"], [admin, "/super-admin/settings"], [admin, "/super-admin/audit"], [admin, "/super-admin/masters/hospitals"], [admin, "/super-admin/users"], [support, "/support"], [support, "/support/queue"], [support, "/support/referrals"], [sudo, "/sudo-admin/queue"], [admin, "/super-admin/queue"], [cm, "/cluster-manager"], [cm, "/cluster-manager/companies"], [cm, "/cluster-manager/registrations"], [cm, "/cluster-manager/employees"], [cm, "/cluster-manager/employees?status=PENDING"], [admin, "/super-admin/employees"], [support, "/support/employees"], [cm, "/cluster-manager/referrals/new"], [cm, `/cluster-manager/referrals/new?employee=${lak.id}`], [cm, `/cluster-manager/employees/${lak.id}`], [cm, `/cluster-manager/referrals/${cmRef}`], [admin, `/super-admin/employees/${lak.id}`], [admin, "/super-admin/registrations"], [cm, `/cluster-manager/referrals/${id}`], [hospital, "/hospital"], [hospital, "/hospital/referrals?tab=completed"], [patient, "/patient"], [patient, `/patient/referrals/${id}`], [patient, "/patient/records"], [patient, "/patient/referrals/new"]]) {
   const p = await c.req(path, { raw: true });
   check(`page ${path} (${c.name})`, p.status, (s) => s === 200);
 }

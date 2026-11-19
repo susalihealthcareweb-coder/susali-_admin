@@ -4,6 +4,10 @@
 const KEY = () => process.env.MSG91_AUTH_KEY;
 const isDev = () => process.env.NODE_ENV !== "production";
 export const msg91Configured = () => Boolean(KEY());
+// WhatsApp alerts go out only once a WhatsApp number is connected in MSG91
+// (MSG91_WHATSAPP_NUMBER). Until then they are skipped; SMS OTPs still work.
+// In development without MSG91 they are simulated in the console.
+export const whatsappEnabled = () => (KEY() ? Boolean(process.env.MSG91_WHATSAPP_NUMBER) : isDev());
 
 const intl = (mobile) => (String(mobile).length === 10 ? "91" + mobile : String(mobile));
 

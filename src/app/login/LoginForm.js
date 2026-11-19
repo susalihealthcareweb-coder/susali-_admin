@@ -128,7 +128,7 @@ function OtpPanel({ next }) {
         <button type="button" className="link text-xs" onClick={() => { setStep("mobile"); setError(""); }}>Change</button>
       </div>
       <OtpInput value={otp} onChange={(v) => { setOtp(v); setError(""); }} autoFocus error={Boolean(error)} disabled={busy} />
-      {dev && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">Development mode: SMS is not set up. Use the DEV_OTP from .env.</p>}
+      {dev && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">SMS codes are not active yet. Use the temporary code from SUSALI.</p>}
       <ErrorBox>{error}</ErrorBox>
       <button className="btn-primary w-full py-2.5" disabled={busy || otp.length !== 6}>{busy ? <Spinner /> : null}{busy ? "Verifying…" : "Verify and log in"}</button>
       <p className="text-center text-sm text-slate-500">

@@ -220,10 +220,10 @@ async function ClusterManager({ me, base }) {
   const clusters = await prisma.cluster.findMany({ where: { id: { in: me.clusterIds } }, select: { name: true } });
   return (
     <div className="space-y-5">
-      <PageHeader title={`Hello, ${me.name.split(" ")[0]}`} subtitle={clusters.map((c) => c.name).join(", ") || "No cluster assigned yet"} actions={<><Link href={base + "/companies"} className="btn-secondary">Add employee</Link><Link href={base + "/referrals/new"} className="btn-primary">+ New referral</Link></>} />
+      <PageHeader title={`Hello, ${me.name.split(" ")[0]}`} subtitle={clusters.map((c) => c.name).join(", ") || "No cluster assigned yet"} actions={<><Link href={base + "/employees"} className="btn-secondary">Employees</Link><Link href={base + "/referrals/new"} className="btn-primary">+ New referral</Link></>} />
       <div className="stagger grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatCard label="My companies" value={d.companies} href={base + "/companies"} />
-        <StatCard label="My employees" value={d.employees} href={base + "/companies"} />
+        <StatCard label="My employees" value={d.employees} href={base + "/employees"} />
         <StatCard label="Referrals this month" value={d.refMonth} href={base + "/referrals"} />
         <StatCard label="Open referrals" value={d.open} href={`${base}/referrals?status=${OPEN_STATUSES.join(",")}`} />
       </div>

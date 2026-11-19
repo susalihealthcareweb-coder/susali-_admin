@@ -84,7 +84,7 @@ export default async function Referrals({ params, searchParams }) {
               r={r}
               me={me}
               href={`${base}/referrals/${r.id}`}
-              actions={isAdminish && ["SUBMITTED", "HOSPITAL_DECLINED"].includes(r.status) ? <QueueActions id={r.id} href={`${base}/referrals/${r.id}`} hospitalName={r.hospital?.name} declined={r.status === "HOSPITAL_DECLINED"} /> : null}
+              actions={isAdminish && ["SUBMITTED", "HOSPITAL_DECLINED"].includes(r.status) ? <QueueActions id={r.id} href={`${base}/referrals/${r.id}`} declined={r.status === "HOSPITAL_DECLINED"} /> : null}
             />
           ))}
         </div>

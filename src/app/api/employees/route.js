@@ -12,11 +12,21 @@ export const GET = route(async (req) => {
   const companies = await prisma.company.findMany({ where: companyScope(me), select: { id: true, name: true } });
   const cname = Object.fromEntries(companies.map((c) => [c.id, c.name]));
   const rx = { contains: q, mode: "insensitive" };
+  const companyId = url.searchParams.get("companyId");
+  const status = url.searchParams.get("status"); // ACTIVE | INACTIVE | PENDING
+  const ids = companies.map((c) => c.id).filter((id) => !companyId || id === companyId);
   const where = {
-    companyId: { in: companies.map((c) => c.id) },
-    ...(url.searchParams.get("active") === "1" ? { isActive: true } : {}),
-    ...(q ? { OR: [{ fullName: rx }, { employeeCode: rx }, { mobile: { contains: q.replace(/\D/g, "") || q } }] } : {}),
+    AND: [
+      { companyId: { in: ids } },
+      url.searchParams.get("active") === "1" || status === "ACTIVE" ? { isActive: true } : {},
+      status === "INACTIVE" ? { isActive: false } : {},
+      status === "PENDING" ? { approvalStatus: "PENDING" } : {},
+      // Employees added by a Cluster Manager have no approvalStatus at all.
+      status === "ACTIVE" ? { OR: [{ approvalStatus: { isSet: false } }, { approvalStatus: null }, { approvalStatus: { in: ["APPROVED", "REJECTED"] } }] } : {},
+      q ? { OR: [{ fullName: rx }, { employeeCode: rx }, { mobile: { contains: q.replace(/\D/g, "") || q } }] } : {},
+    ],
   };
+
   const [rows, total] = await Promise.all([
     prisma.employee.findMany({ where, orderBy: q ? { fullName: "asc" } : { updatedAt: "desc" }, take, skip, include: { _count: { select: { familyMembers: { where: { isActive: true } } } } } }),
     prisma.employee.count({ where }),

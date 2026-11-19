@@ -76,15 +76,11 @@ export const referralDraftSchema = z.object({
   urgency: z.enum(["ROUTINE", "URGENT", "EMERGENCY"]).default("ROUTINE"),
 });
 
+// The employee (or Cluster Manager) gives only these; SUSALI assigns the
+// hospital when verifying. Everything else on the referral is optional.
 export const REQUIRED_FOR_SUBMIT = {
-  dispensaryId: "Dispensary visited",
-  dispensaryVisitDate: "Dispensary visit date",
-  superintendentHospitalId: "Superintendent hospital",
   referralLetterNo: "Referral letter number",
-  referralDate: "Referral date",
-  hospitalId: "Referred to hospital",
-  departmentId: "Department or speciality",
-  diagnosis: "Provisional diagnosis or reason",
+  departmentId: "Department",
 };
 
 export const staffUserSchema = z.object({

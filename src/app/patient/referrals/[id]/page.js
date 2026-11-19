@@ -11,7 +11,7 @@ import Timeline from "@/components/Timeline";
 import ReferralForm from "@/components/ReferralForm";
 import PatientCard from "@/components/PatientCard";
 import PatientCancel from "@/components/PatientCancel";
-import { DocumentList, Uploader } from "@/components/Documents";
+import { DocumentList } from "@/components/Documents";
 import { fmtDate, patientOf } from "@/lib/format";
 import { PATIENT_DOC_CATEGORIES, HOSPITAL_DOC_CATEGORIES } from "@/lib/constants";
 import { PATIENT_CANCELLABLE } from "@/lib/referral-flow";
@@ -60,13 +60,8 @@ export default async function PatientReferral({ params }) {
       {editable ? (
         <>
           <PatientCard e={me.employee} />
-          <Section title="Referral letter and earlier reports">
-            <div className="space-y-3">
-              <Uploader referralId={r.id} categories={hasLetter ? ["PREVIOUS_REPORT", "REFERRAL_LETTER"] : ["REFERRAL_LETTER", "PREVIOUS_REPORT"]} maxMb={settings.maxFileMb} compact />
-              <DocumentList documents={plain(mine)} deletable />
-            </div>
-          </Section>
-          <ReferralForm referral={plain(r)} masters={masters} hasLetter={hasLetter} canSubmit family={family} holder={{ name: me.employee.fullName }} />
+          {mine.length > 0 && <Section title="Letters attached"><DocumentList documents={plain(mine)} deletable group={false} /></Section>}
+          <ReferralForm referral={plain(r)} masters={masters} hasLetter={hasLetter} family={family} holder={{ name: me.employee.fullName }} />
         </>
       ) : (
         <>
@@ -78,7 +73,7 @@ export default async function PatientReferral({ params }) {
           <Section title="Referral details">
             <dl className="grid grid-cols-2 gap-4">
               <Field label="Patient">{who.name}{who.relation !== "Self" ? ` (${who.relation})` : ""}</Field>
-              <Field label="Hospital">{r.hospital?.name}</Field>
+              <Field label="Hospital">{r.hospital?.name || "To be assigned by SUSALI"}</Field>
               <Field label="Department">{r.department?.name}</Field>
               <Field label="Dispensary">{r.dispensary?.name}</Field>
               <Field label="Superintendent hospital">{r.superintendentHospital?.name}</Field>

@@ -29,6 +29,7 @@ const COLUMNS = [
   ["forwarded", "Forwarded", 12],
   ["visited", "Visited", 12],
   ["completed", "Completed", 12],
+  ["bill", "Bill amount (₹)", 14],
 ];
 
 export const GET = route(async (req) => {
@@ -74,6 +75,7 @@ export const GET = route(async (req) => {
     forwarded: fmtDate(r.forwardedAt),
     visited: fmtDate(r.visitedAt),
     completed: fmtDate(r.completedAt),
+    bill: r.billTotal ?? "",
   }));
   await audit({ actor: me, action: "REPORT_EXPORT", entity: "Report", after: { format, ...opts, rows: rows.length }, req });
 
@@ -89,6 +91,12 @@ export const GET = route(async (req) => {
     ws.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0B4633" } };
     ws.views = [{ state: "frozen", ySplit: 1 }];
     rows.forEach((r) => ws.addRow(r));
+    ws.getColumn("bill").numFmt = "#,##0.00";
+    const billed = rows.reduce((t, r) => t + (Number(r.bill) || 0), 0);
+    if (billed) {
+      const total = ws.addRow({ referralNo: "Total billed", bill: billed });
+      total.font = { bold: true };
+    }
     ws.autoFilter = { from: "A1", to: { row: 1, column: COLUMNS.length } };
     const buf = await wb.xlsx.writeBuffer();
     return new Response(buf, {
@@ -125,7 +133,7 @@ export const GET = route(async (req) => {
     const y = doc.y;
     if (n % 2) doc.rect(28, y - 1, usable, 12).fill("#f1f5f9");
     doc.fillColor("#0f172a").fontSize(6.5);
-    pdfCols.forEach(([k], i) => { doc.text(String(r[k] ?? ""), x + 2, y + 1, { width: widths[i] - 4, lineBreak: false, ellipsis: true }); x += widths[i]; });
+    pdfCols.forEach(([k], i) => { doc.text(k === "bill" && r.bill !== "" ? `Rs ${Number(r.bill).toLocaleString("en-IN")}` : String(r[k] ?? ""), x + 2, y + 1, { width: widths[i] - 4, lineBreak: false, ellipsis: true }); x += widths[i]; });
     doc.y = y + 12;
   });
   doc.end();

@@ -111,7 +111,7 @@ module.exports = async function seedDemo(prisma, ctx) {
       employees.push({ ...e, company: c });
     }
   }
-  const lakshmi = await prisma.employee.findUnique({ where: { mobile: "9000000010" } });
+  const lakshmi = await prisma.employee.findUnique({ where: { mobile: "9010561998" } });
   if (lakshmi) employees.unshift({ ...lakshmi, company: companies[0] });
 
   // Family members on some employees' cards.
@@ -123,7 +123,7 @@ module.exports = async function seedDemo(prisma, ctx) {
   ];
   const familyByEmp = {};
   for (const [idx, list] of FAMILY) {
-    const emp = idx === 0 ? await prisma.employee.findUnique({ where: { mobile: "9000000010" } }) : employees[idx];
+    const emp = idx === 0 ? await prisma.employee.findUnique({ where: { mobile: "9010561998" } }) : employees[idx];
     if (!emp) continue;
     const existing = await prisma.familyMember.findMany({ where: { employeeId: emp.id, isActive: true } });
     if (!existing.length) {

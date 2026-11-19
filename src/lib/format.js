@@ -15,6 +15,10 @@ export function toInputDate(d) {
   if (!d) return "";
   return new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date(d));
 }
+export function fmtRupees(n) {
+  if (n == null || Number.isNaN(Number(n))) return "—";
+  return "₹" + Number(n).toLocaleString("en-IN", { maximumFractionDigits: 2 });
+}
 export function fmtBytes(n) {
   if (n < 1024) return n + " B";
   if (n < 1024 * 1024) return (n / 1024).toFixed(0) + " KB";

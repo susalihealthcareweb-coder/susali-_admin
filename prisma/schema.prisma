@@ -47,6 +47,7 @@ enum DocCategory {
   LAB_REPORT
   SCAN
   DISCHARGE_SUMMARY
+  BILL // Added: hospital bill / invoice, with an amount
   OTHER
 }
 
@@ -289,6 +290,7 @@ model Referral {
   treatingDoctor           String?
   admissionDate            DateTime?
   treatmentNotes           String? // Added: notes recorded during care
+  billTotal                Float? // Added: sum of the hospital's bill documents (rupees)
   escalations              String[] // Added: escalation stages already raised, so each fires once
   submittedAt              DateTime?
   forwardedAt              DateTime?
@@ -336,6 +338,7 @@ model Document {
   uploadedById      String?     @db.ObjectId
   uploadedBy        User?       @relation(fields: [uploadedById], references: [id])
   uploadedByPatient Boolean     @default(false)
+  amount            Float? // Added: bill amount in rupees (BILL documents only)
   isDeleted         Boolean     @default(false)
   createdAt         DateTime    @default(now())
 

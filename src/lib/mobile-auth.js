@@ -39,5 +39,6 @@ export async function profileOf(me) {
   }
   const clusters = me.clusterIds?.length ? await prisma.cluster.findMany({ where: { id: { in: me.clusterIds } }, select: { id: true, name: true } }) : [];
   const u = await prisma.user.findUnique({ where: { id: me.id }, select: { deletionRequestedAt: true } });
-  return { role: me.role, id: me.id, name: me.name, email: me.email, clusters, deletionRequestedAt: u?.deletionRequestedAt || null };
+  const hospital = me.hospitalId ? await prisma.hospital.findUnique({ where: { id: me.hospitalId }, select: { id: true, name: true, city: true } }) : null;
+  return { role: me.role, id: me.id, name: me.name, email: me.email, clusters, hospital, deletionRequestedAt: u?.deletionRequestedAt || null };
 }
