@@ -104,10 +104,10 @@ export function Uploader({ referralId, categories, maxMb = 20, onDone, compact }
       <div className="flex flex-wrap items-end gap-2">
         {categories.length > 1 && (
           <div>
-            <label className="label">Category</label>
+            <label className="block"><span className="label">Category</span>
             <select className="input w-auto" value={category} onChange={(e) => setCategory(e.target.value)}>
               {categories.map((c) => <option key={c} value={c}>{DOC_CATEGORIES[c]}</option>)}
-            </select>
+            </select></label>
           </div>
         )}
         {isBill && (

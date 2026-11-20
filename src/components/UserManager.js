@@ -54,21 +54,21 @@ export default function UserManager({ users, clusters, hospitals, myRole, myId }
       <Dialog open={Boolean(edit)} onClose={() => setEdit(null)} title={edit?.id ? "Edit user" : "Add user"} wide footer={<><button className="btn-secondary" onClick={() => setEdit(null)}>Back</button><button className="btn-primary" form="f-user" disabled={busy}>Save</button></>}>
         {v && (
           <form id="f-user" onSubmit={save} className="grid gap-3 sm:grid-cols-2">
-            <div><label className="label">Name *</label><input className="input" required value={v.name} onChange={(e) => set("name", e.target.value)} /></div>
-            <div><label className="label">Role *</label><select className="input" value={v.role} disabled={edit?.id === myId} onChange={(e) => set("role", e.target.value)}>{roles.map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select></div>
-            <div><label className="label">Email (login) *</label><input className="input" type="email" required value={v.email} onChange={(e) => set("email", e.target.value)} /></div>
-            <div><label className="label">Mobile (WhatsApp) *</label><input className="input" required inputMode="numeric" value={v.mobile} onChange={(e) => set("mobile", e.target.value)} /></div>
-            <div className="sm:col-span-2"><label className="label">{edit?.id ? "New password (leave blank to keep)" : "Initial password *"}</label><input className="input" type="password" autoComplete="new-password" minLength={8} required={!edit?.id} value={v.password} onChange={(e) => set("password", e.target.value)} /></div>
+            <div><label className="block"><span className="label">Name *</span><input className="input" required value={v.name} onChange={(e) => set("name", e.target.value)} /></label></div>
+            <div><label className="block"><span className="label">Role *</span><select className="input" value={v.role} disabled={edit?.id === myId} onChange={(e) => set("role", e.target.value)}>{roles.map((r) => <option key={r} value={r}>{ROLES[r].label}</option>)}</select></label></div>
+            <div><label className="block"><span className="label">Email (login) *</span><input className="input" type="email" required value={v.email} onChange={(e) => set("email", e.target.value)} /></label></div>
+            <div><label className="block"><span className="label">Mobile (WhatsApp) *</span><input className="input" required inputMode="numeric" value={v.mobile} onChange={(e) => set("mobile", e.target.value)} /></label></div>
+            <div className="sm:col-span-2"><label className="block"><span className="label">{edit?.id ? "New password (leave blank to keep)" : "Initial password *"}</span><input className="input" type="password" autoComplete="new-password" minLength={8} required={!edit?.id} value={v.password} onChange={(e) => set("password", e.target.value)} /></label></div>
             {v.role === "CLUSTER_MANAGER" && (
               <div className="sm:col-span-2">
-                <label className="label">Clusters *</label>
-                <div className="grid grid-cols-2 gap-1 rounded-lg border border-slate-200 p-2 text-sm">
+                <span className="label" id="user-clusters-label">Clusters *</span>
+                <div role="group" aria-labelledby="user-clusters-label" className="grid grid-cols-2 gap-1 rounded-lg border border-slate-200 p-2 text-sm">
                   {clusters.map((c) => <label key={c.id} className="flex items-center gap-2"><input type="checkbox" checked={v.clusterIds.includes(c.id)} onChange={(e) => set("clusterIds", e.target.checked ? [...v.clusterIds, c.id] : v.clusterIds.filter((x) => x !== c.id))} />{c.name}</label>)}
                 </div>
               </div>
             )}
             {v.role === "HOSPITAL_USER" && (
-              <div className="sm:col-span-2"><label className="label">Hospital *</label><select className="input" required value={v.hospitalId} onChange={(e) => set("hospitalId", e.target.value)}><option value="">Choose…</option>{hospitals.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}</select></div>
+              <div className="sm:col-span-2"><label className="block"><span className="label">Hospital *</span><select className="input" required value={v.hospitalId} onChange={(e) => set("hospitalId", e.target.value)}><option value="">Choose…</option>{hospitals.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}</select></label></div>
             )}
             <div className="flex flex-wrap gap-4 text-sm sm:col-span-2">
               {myRole === "SUPER_ADMIN" && <label className="flex items-center gap-2"><input type="checkbox" checked={v.isActive} disabled={edit?.id === myId} onChange={(e) => set("isActive", e.target.checked)} /> Active</label>}

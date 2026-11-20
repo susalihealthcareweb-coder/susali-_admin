@@ -238,7 +238,8 @@ check("sudo cannot deactivate a master", await sudo.req(`/api/admin/dispensaries
 check("sudo can edit a master", await sudo.req(`/api/admin/dispensaries/${dsp.id}`, { method: "PATCH", json: { city: dsp.city || "Hyderabad" } }), is(200));
 check("super admin can deactivate", await admin.req(`/api/admin/dispensaries/${dsp.id}`, { method: "PATCH", json: { isActive: false } }), is(200));
 await admin.req(`/api/admin/dispensaries/${dsp.id}`, { method: "PATCH", json: { isActive: true } });
-const supUser = (await sudo.req("/api/admin/users?role=SUPPORT")).data.rows[0];
+// An active Support user (other tests leave deactivated ones behind).
+const supUser = (await sudo.req("/api/admin/users?role=SUPPORT")).data.rows.find((u) => u.isActive);
 check("sudo cannot deactivate a user", await sudo.req(`/api/admin/users/${supUser.id}`, { method: "PATCH", json: { isActive: false } }), is(403));
 
 // Support accepts / rejects straight from the queue (no manual lock)

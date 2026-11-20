@@ -20,7 +20,7 @@ export default function CompanyForm({ company, dispensaries, clusters, canChoose
   }));
   const [visit, setVisit] = useState({ visitedAt: new Date().toISOString().slice(0, 16), remarks: "", latitude: null, longitude: null });
   const [busy, setBusy] = useState(false);
-  const set = (k) => (e) => setV({ ...v, [k]: e.target.value });
+  const set = (k) => (e) => { const val = e.target.value; setV((x) => ({ ...x, [k]: val })); };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -39,23 +39,23 @@ export default function CompanyForm({ company, dispensaries, clusters, canChoose
         <div className="grid gap-3 sm:grid-cols-2">
           {FIELDS.map(([k, label, req, full]) => (
             <div key={k} className={full ? "sm:col-span-2" : ""}>
-              <label className="label">{label}{req ? " *" : ""}</label>
-              <input className="input" value={v[k]} onChange={set(k)} required={req} inputMode={["pincode", "hrMobile"].includes(k) ? "numeric" : undefined} />
+              <label className="block"><span className="label">{label}{req ? " *" : ""}</span>
+              <input className="input" value={v[k]} onChange={set(k)} required={req} inputMode={["pincode", "hrMobile"].includes(k) ? "numeric" : undefined} /></label>
             </div>
           ))}
           <div>
-            <label className="label">Linked dispensary</label>
+            <label className="block"><span className="label">Linked dispensary</span>
             <select className="input" value={v.dispensaryId} onChange={set("dispensaryId")}>
               <option value="">None</option>
               {dispensaries.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-            </select>
+            </select></label>
           </div>
           {(canChooseCluster || clusters.length > 1) && (
             <div>
-              <label className="label">Cluster *</label>
+              <label className="block"><span className="label">Cluster *</span>
               <select className="input" value={v.clusterId} onChange={set("clusterId")} required>
                 {clusters.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              </select></label>
             </div>
           )}
         </div>
@@ -92,9 +92,9 @@ export function VisitFields({ visit, setVisit, companyId, showPhoto }) {
     <section className="card card-pad">
       <h2 className="mb-3 text-sm font-semibold">Visit</h2>
       <div className="grid gap-3 sm:grid-cols-2">
-        <div><label className="label">Visit date and time</label><input type="datetime-local" className="input" value={visit.visitedAt} onChange={(e) => setVisit({ ...visit, visitedAt: e.target.value })} required /></div>
+        <div><label className="block"><span className="label">Visit date and time</span><input type="datetime-local" className="input" value={visit.visitedAt} onChange={(e) => setVisit({ ...visit, visitedAt: e.target.value })} required /></label></div>
         <div>
-          <label className="label">GPS location</label>
+          <span className="label">GPS location</span>
           <div className="flex items-center gap-2">
             <button type="button" className="btn-secondary" onClick={locate} disabled={locating}>{locating ? "Locating…" : visit.latitude ? "Update location" : "Capture location"}</button>
             {visit.latitude != null && <span className="text-xs text-slate-600">{visit.latitude.toFixed(5)}, {visit.longitude.toFixed(5)}</span>}
@@ -102,12 +102,12 @@ export function VisitFields({ visit, setVisit, companyId, showPhoto }) {
         </div>
         {showPhoto && (
           <div>
-            <label className="label">Photo of premises (optional)</label>
-            <input type="file" accept="image/jpeg,image/png" capture="environment" className="text-sm" onChange={(e) => onPhoto(e.target.files[0])} />
+            <label className="block"><span className="label">Photo of premises (optional)</span>
+            <input type="file" accept="image/jpeg,image/png" capture="environment" className="text-sm" onChange={(e) => onPhoto(e.target.files[0])} /></label>
             {visit.photoKey && <p className="mt-1 text-xs text-green-700">Photo attached</p>}
           </div>
         )}
-        <div className="sm:col-span-2"><label className="label">Remarks</label><textarea className="input" rows={2} value={visit.remarks} onChange={(e) => setVisit({ ...visit, remarks: e.target.value })} /></div>
+        <div className="sm:col-span-2"><label className="block"><span className="label">Remarks</span><textarea className="input" rows={2} value={visit.remarks} onChange={(e) => setVisit({ ...visit, remarks: e.target.value })} /></label></div>
       </div>
     </section>
   );

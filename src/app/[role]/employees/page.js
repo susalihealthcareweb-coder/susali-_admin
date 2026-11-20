@@ -59,7 +59,7 @@ export default async function Employees({ params, searchParams }) {
           <form method="get" className="flex gap-2">
             {tab !== "ALL" && <input type="hidden" name="status" value={tab} />}
             {q && <input type="hidden" name="q" value={q} />}
-            <select name="company" defaultValue={sp.company || ""} className="input w-auto">
+            <select name="company" aria-label="Filter by company" defaultValue={sp.company || ""} className="input w-auto">
               <option value="">All companies</option>
               {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>

@@ -124,6 +124,10 @@ try {
   step("Website workflow (scripts/e2e.mjs)");
   results.push(["website", await run("node", ["scripts/e2e.mjs", BASE])]);
 
+  step("Functional checks (scripts/functional.mjs)");
+  await clearTestOtps();
+  results.push(["functional", await run("node", ["scripts/functional.mjs", BASE])]);
+
   const mobile = path.resolve(ROOT, "../susali-mobile/scripts/api-check.mjs");
   if (existsSync(mobile)) {
     step("Mobile app API (susali-mobile/scripts/api-check.mjs)");

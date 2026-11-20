@@ -16,7 +16,7 @@ export default function SearchBar({ placeholder = "Search…", param = "q" }) {
   };
   return (
     <form onSubmit={submit} className="flex w-full max-w-md gap-2">
-      <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} type="search" />
+      <input className="input" value={q} onChange={(e) => setQ(e.target.value)} placeholder={placeholder} aria-label={placeholder || "Search"} type="search" />
       <button className="btn-secondary">Search</button>
     </form>
   );

@@ -27,9 +27,9 @@ export default async function Audit({ params, searchParams }) {
     <>
       <PageHeader title="Audit log" subtitle="Every create, update, status change, login and file access." />
       <form method="get" className="card card-pad mb-4 grid gap-3 sm:grid-cols-5">
-        <div className="sm:col-span-2"><label className="label">Search (record id, user id, IP)</label><input className="input" name="q" defaultValue={sp.q} /></div>
-        <div><label className="label">Action</label><select className="input" name="action" defaultValue={sp.action || ""}><option value="">All</option>{ACTIONS.map((a) => <option key={a}>{a}</option>)}</select></div>
-        <div><label className="label">Entity</label><select className="input" name="entity" defaultValue={sp.entity || ""}><option value="">All</option>{["Referral", "Employee", "Company", "User", "Document", "Hospital", "Report", "Setting"].map((a) => <option key={a}>{a}</option>)}</select></div>
+        <div className="sm:col-span-2"><label className="block"><span className="label">Search (record id, user id, IP)</span><input className="input" name="q" defaultValue={sp.q} /></label></div>
+        <div><label className="block"><span className="label">Action</span><select className="input" name="action" defaultValue={sp.action || ""}><option value="">All</option>{ACTIONS.map((a) => <option key={a}>{a}</option>)}</select></label></div>
+        <div><label className="block"><span className="label">Entity</span><select className="input" name="entity" defaultValue={sp.entity || ""}><option value="">All</option>{["Referral", "Employee", "Company", "User", "Document", "Hospital", "Report", "Setting"].map((a) => <option key={a}>{a}</option>)}</select></label></div>
         <div className="flex items-end"><button className="btn-primary">Filter</button></div>
       </form>
       <div className="card overflow-x-auto">

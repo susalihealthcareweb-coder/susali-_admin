@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useId, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Dialog from "./Dialog";
@@ -13,6 +13,7 @@ import { REJECT_REASONS } from "@/lib/constants";
 // read the letter or ask for details.
 export default function QueueActions({ id, href, disabled, declined, contact }) {
   const router = useRouter();
+  const uid = useId();
   const [open, setOpen] = useState(null);
   const [busy, setBusy] = useState(false);
   const [notes, setNotes] = useState("");
@@ -58,9 +59,9 @@ export default function QueueActions({ id, href, disabled, declined, contact }) 
 
       <Dialog open={open === "accept"} onClose={() => setOpen(null)} title="Accept and choose the hospital" footer={<><button className="btn-secondary" onClick={() => setOpen(null)}>Back</button><button className="btn-primary" disabled={busy || !hospitalId || !called} onClick={() => act("forward", { hospitalId, notes, patientContacted: called, callNote }, "Referral accepted and sent")}>{busy ? "Sending…" : "Accept & send"}</button></>}>
         {declined && <p className="mb-3 rounded-lg bg-orange-50 px-3 py-2 text-xs text-orange-800">The previous hospital declined. It is listed last.</p>}
-        <label className="label">Hospital</label>
+        <label className="label" htmlFor={`${uid}-hospital`}>Hospital</label>
         {options === null ? <p className="text-sm text-slate-500">Finding the best hospital…</p> : (
-          <select className="input" value={hospitalId} onChange={(e) => setHospitalId(e.target.value)}>
+          <select id={`${uid}-hospital`} className="input" value={hospitalId} onChange={(e) => setHospitalId(e.target.value)}>
             <option value="">Choose…</option>
             {options.map((x) => <option key={x.id} value={x.id}>{x.suggested ? "★ Suggested · " : ""}{x.name}, {x.city}{x.offersDepartment ? "" : " (department not listed)"}{x.declinedBefore ? " (declined)" : ""} · {x.openReferrals} open</option>)}
           </select>
@@ -73,8 +74,8 @@ export default function QueueActions({ id, href, disabled, declined, contact }) 
       </Dialog>
 
       <Dialog open={open === "reject"} onClose={() => setOpen(null)} title="Reject this referral?" footer={<><button className="btn-secondary" onClick={() => setOpen(null)}>Back</button><button className="btn-danger" disabled={busy || remarks.trim().length < 3} onClick={() => act("reject", { reason, remarks }, "Referral rejected")}>Reject</button></>}>
-        <label className="label">Reason</label>
-        <select className="input" value={reason} onChange={(e) => setReason(e.target.value)}>{REJECT_REASONS.map((x) => <option key={x}>{x}</option>)}</select>
+        <label className="block"><span className="label">Reason</span>
+        <select className="input" value={reason} onChange={(e) => setReason(e.target.value)}>{REJECT_REASONS.map((x) => <option key={x}>{x}</option>)}</select></label>
         <label className="label mt-3">Remarks (shared with the patient)</label>
         <textarea className="input" rows={3} value={remarks} onChange={(e) => setRemarks(e.target.value)} placeholder="For example: the letter number does not match" />
       </Dialog>

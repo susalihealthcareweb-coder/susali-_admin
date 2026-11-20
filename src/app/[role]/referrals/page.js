@@ -52,25 +52,25 @@ export default async function Referrals({ params, searchParams }) {
       )}
       {!sp.view && !sp.ids && !tab && (
         <form className="card card-pad mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-6" method="get">
-          <div className="lg:col-span-2"><label className="label">Search</label><input className="input" name="q" defaultValue={sp.q} placeholder="Referral no, patient, mobile, employee ID, company" /></div>
+          <div className="lg:col-span-2"><label className="block"><span className="label">Search</span><input className="input" name="q" defaultValue={sp.q} placeholder="Referral no, patient, mobile, employee ID, company" /></label></div>
           <div>
-            <label className="label">Status</label>
+            <label className="block"><span className="label">Status</span>
             <select className="input" name="status" defaultValue={sp.status || ""}>
               <option value="">All</option>
               {Object.entries(STATUS).filter(([k]) => k !== "DRAFT").map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               {sp.status?.includes(",") && <option value={sp.status}>Selected group</option>}
-            </select>
+            </select></label>
           </div>
           {isAdminish && (
             <div>
-              <label className="label">Hospital</label>
-              <select className="input" name="hospitalId" defaultValue={sp.hospitalId || ""}><option value="">All</option>{hospitals.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}</select>
+              <label className="block"><span className="label">Hospital</span>
+              <select className="input" name="hospitalId" defaultValue={sp.hospitalId || ""}><option value="">All</option>{hospitals.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}</select></label>
             </div>
           )}
           {isAdminish && (
             <div>
-              <label className="label">Cluster</label>
-              <select className="input" name="clusterId" defaultValue={sp.clusterId || ""}><option value="">All</option>{clusters.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}</select>
+              <label className="block"><span className="label">Cluster</span>
+              <select className="input" name="clusterId" defaultValue={sp.clusterId || ""}><option value="">All</option>{clusters.map((h) => <option key={h.id} value={h.id}>{h.name}</option>)}</select></label>
             </div>
           )}
           <div className="flex items-end gap-2"><button className="btn-primary">Apply</button><Link className="btn-ghost" href={`${base}/referrals`}>Clear</Link></div>

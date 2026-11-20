@@ -60,9 +60,9 @@ export default function MasterManager({ type, rows, fields, departments, canEdit
           <form id="f-master" onSubmit={save} className="grid gap-3 sm:grid-cols-2">
             {fields.map((f) => (
               <div key={f.key} className={f.type === "multi" || f.full ? "sm:col-span-2" : ""}>
-                <label className="label">{f.label}{f.required ? " *" : ""}</label>
+                <label className="label" htmlFor={`master-${f.key}`} id={`master-${f.key}-label`}>{f.label}{f.required ? " *" : ""}</label>
                 {f.type === "multi" ? (
-                  <div className="grid max-h-48 grid-cols-2 gap-1 overflow-y-auto rounded-lg border border-slate-200 p-2 text-sm">
+                  <div role="group" aria-labelledby={`master-${f.key}-label`} className="grid max-h-48 grid-cols-2 gap-1 overflow-y-auto rounded-lg border border-slate-200 p-2 text-sm">
                     {departments.map((d) => (
                       <label key={d.id} className="flex items-center gap-2">
                         <input type="checkbox" checked={editing.v[f.key].includes(d.id)} onChange={(e) => { const on = e.target.checked; setEditing((cur) => ({ ...cur, v: { ...cur.v, [f.key]: on ? [...cur.v[f.key], d.id] : cur.v[f.key].filter((x) => x !== d.id) } })); }} />
@@ -71,7 +71,7 @@ export default function MasterManager({ type, rows, fields, departments, canEdit
                     ))}
                   </div>
                 ) : (
-                  <input className="input" type={f.type || "text"} required={f.required} value={editing.v[f.key]} onChange={(e) => { const val = e.target.value; setEditing((cur) => ({ ...cur, v: { ...cur.v, [f.key]: val } })); }} />
+                  <input id={`master-${f.key}`} className="input" type={f.type || "text"} required={f.required} value={editing.v[f.key]} onChange={(e) => { const val = e.target.value; setEditing((cur) => ({ ...cur, v: { ...cur.v, [f.key]: val } })); }} />
                 )}
               </div>
             ))}

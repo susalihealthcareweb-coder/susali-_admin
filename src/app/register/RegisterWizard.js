@@ -21,7 +21,7 @@ export default function RegisterWizard() {
   const [v, setV] = useState(EMPTY);
   const [error, setError] = useState("");
   const [done, setDone] = useState(false);
-  const set = (k) => (e) => { setV({ ...v, [k]: e.target.value }); setError(""); };
+  const set = (k) => (e) => { const val = e.target.value; setV((x) => ({ ...x, [k]: val })); setError(""); };
 
   const validate = () => {
     if (step === 0) {
@@ -160,9 +160,9 @@ function PersonalStep({ v, setV, set }) {
   return (
     <div className="space-y-4">
       <div><label className="label" htmlFor="name">Full name</label><input id="name" className="input py-2.5 text-base" autoComplete="name" value={v.fullName} onChange={set("fullName")} /></div>
-      <div><span className="label">Gender</span><Chips options={GENDERS} value={v.gender} onChange={(g) => setV({ ...v, gender: g })} /></div>
+      <div><span className="label">Gender</span><Chips options={GENDERS} value={v.gender} onChange={(g) => setV((x) => ({ ...x, gender: g }))} /></div>
       <div><label className="label" htmlFor="dob">Date of birth</label><input id="dob" type="date" max={today()} className="input py-2.5 text-base" value={v.dateOfBirth} onChange={set("dateOfBirth")} /></div>
-      <div><span className="label">Blood group (optional)</span><Chips options={BLOOD_GROUPS} value={v.bloodGroup} onChange={(g) => setV({ ...v, bloodGroup: v.bloodGroup === g ? "" : g })} /></div>
+      <div><span className="label">Blood group (optional)</span><Chips options={BLOOD_GROUPS} value={v.bloodGroup} onChange={(g) => setV((x) => ({ ...x, bloodGroup: x.bloodGroup === g ? "" : g }))} /></div>
     </div>
   );
 }
@@ -170,13 +170,13 @@ function PersonalStep({ v, setV, set }) {
 function ContactStep({ v, set }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      <div className="sm:col-span-2"><label className="label">Email (optional)</label><input className="input" type="email" autoComplete="email" value={v.email} onChange={set("email")} /></div>
-      <div><label className="label">Department</label><input className="input" value={v.department} onChange={set("department")} /></div>
-      <div><label className="label">Designation</label><input className="input" value={v.designation} onChange={set("designation")} /></div>
-      <div><label className="label">Aadhaar last 4 digits</label><input className="input" inputMode="numeric" maxLength={4} value={v.aadhaarLast4} onChange={(e) => set("aadhaarLast4")({ target: { value: e.target.value.replace(/\D/g, "") } })} /></div>
-      <div className="sm:col-span-2"><label className="label">Address</label><textarea className="input" rows={2} value={v.address} onChange={set("address")} /></div>
-      <div><label className="label">Emergency contact name</label><input className="input" value={v.emergencyName} onChange={set("emergencyName")} /></div>
-      <div><label className="label">Emergency contact mobile</label><input className="input" inputMode="numeric" maxLength={10} value={v.emergencyMobile} onChange={(e) => set("emergencyMobile")({ target: { value: e.target.value.replace(/\D/g, "") } })} /></div>
+      <div className="sm:col-span-2"><label className="label" htmlFor="remail">Email (optional)</label><input id="remail" className="input" type="email" autoComplete="email" value={v.email} onChange={set("email")} /></div>
+      <div><label className="label" htmlFor="rdept">Department</label><input id="rdept" className="input" value={v.department} onChange={set("department")} /></div>
+      <div><label className="label" htmlFor="rdesig">Designation</label><input id="rdesig" className="input" value={v.designation} onChange={set("designation")} /></div>
+      <div><label className="label" htmlFor="raadhaar">Aadhaar last 4 digits</label><input id="raadhaar" className="input" inputMode="numeric" maxLength={4} value={v.aadhaarLast4} onChange={(e) => set("aadhaarLast4")({ target: { value: e.target.value.replace(/\D/g, "") } })} /></div>
+      <div className="sm:col-span-2"><label className="label" htmlFor="raddress">Address</label><textarea id="raddress" className="input" rows={2} value={v.address} onChange={set("address")} /></div>
+      <div><label className="label" htmlFor="rename">Emergency contact name</label><input id="rename" className="input" value={v.emergencyName} onChange={set("emergencyName")} /></div>
+      <div><label className="label" htmlFor="remobile">Emergency contact mobile</label><input id="remobile" className="input" inputMode="numeric" maxLength={10} value={v.emergencyMobile} onChange={(e) => set("emergencyMobile")({ target: { value: e.target.value.replace(/\D/g, "") } })} /></div>
     </div>
   );
 }
@@ -227,7 +227,7 @@ function VerifyStep({ v, setV, onDone }) {
         <div className="flex gap-2">
           <div className="flex flex-1 rounded-lg focus-within:ring-4 focus-within:ring-brand-600/15">
             <span className="inline-flex items-center rounded-l-lg border border-r-0 border-slate-300 bg-slate-50 px-3 text-sm text-slate-500">+91</span>
-            <input id="rmobile" className="input rounded-l-none py-2.5 text-base focus:ring-0" inputMode="numeric" maxLength={10} disabled={sent} value={v.mobile} onChange={(e) => setV({ ...v, mobile: e.target.value.replace(/\D/g, "") })} />
+            <input id="rmobile" className="input rounded-l-none py-2.5 text-base focus:ring-0" inputMode="numeric" maxLength={10} disabled={sent} value={v.mobile} onChange={(e) => { const val = e.target.value.replace(/\D/g, ""); setV((x) => ({ ...x, mobile: val })); }} />
           </div>
           {sent ? (
             <button type="button" className="btn-secondary" onClick={() => { setSent(false); setOtp(""); }}>Change</button>

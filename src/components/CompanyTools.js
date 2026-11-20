@@ -50,7 +50,7 @@ export function EmployeeDialog({ companyId, companies, employee, trigger }) {
   const [company, setCompany] = useState(companyId || (companies?.length === 1 ? companies[0].id : ""));
   const [busy, setBusy] = useState(false);
   const [v, setV] = useState(() => (employee ? { ...EMPTY, ...Object.fromEntries(Object.keys(EMPTY).map((k) => [k, employee[k] ?? ""])), dateOfBirth: toInputDate(employee.dateOfBirth) } : EMPTY));
-  const set = (k) => (e) => setV({ ...v, [k]: e.target.value });
+  const set = (k) => (e) => { const val = e.target.value; setV((x) => ({ ...x, [k]: val })); };
   const save = async (e) => {
     e.preventDefault();
     setBusy(true);
@@ -60,7 +60,7 @@ export function EmployeeDialog({ companyId, companies, employee, trigger }) {
     if (ok) { setOpen(false); if (!employee) setV(EMPTY); router.refresh(); }
   };
   const F = (k, label, props = {}) => (
-    <div className={props.full ? "sm:col-span-2" : ""}><label className="label">{label}{props.required ? " *" : ""}</label><input className="input" value={v[k]} onChange={set(k)} {...props} full={undefined} /></div>
+    <div className={props.full ? "sm:col-span-2" : ""}><label className="block"><span className="label">{label}{props.required ? " *" : ""}</span><input className="input" value={v[k]} onChange={set(k)} {...props} full={undefined} /></label></div>
   );
   return (
     <>
@@ -69,23 +69,23 @@ export function EmployeeDialog({ companyId, companies, employee, trigger }) {
         <form id="f-emp" onSubmit={save} className="grid gap-3 sm:grid-cols-2">
           {!employee && !companyId && companies && (
             <div className="sm:col-span-2">
-              <label className="label">Company *</label>
+              <label className="block"><span className="label">Company *</span>
               <select className="input" required value={company} onChange={(e) => setCompany(e.target.value)}>
                 <option value="">Choose the company…</option>
                 {companies.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-              </select>
+              </select></label>
             </div>
           )}
           {F("employeeCode", "Employee ID", { required: true })}
           {F("fullName", "Full name", { required: true })}
-          <div><label className="label">Gender *</label><select className="input" value={v.gender} onChange={set("gender")}>{GENDERS.map((g) => <option key={g}>{g}</option>)}</select></div>
+          <div><label className="block"><span className="label">Gender *</span><select className="input" value={v.gender} onChange={set("gender")}>{GENDERS.map((g) => <option key={g}>{g}</option>)}</select></label></div>
           {F("dateOfBirth", "Date of birth", { required: true, type: "date" })}
           {F("mobile", "Mobile (used for OTP login)", { required: true, inputMode: "numeric", maxLength: 13 })}
           {F("email", "Email", { type: "email" })}
           {F("aadhaarLast4", "Aadhaar last 4 digits", { inputMode: "numeric", maxLength: 4 })}
           {F("department", "Department")}
           {F("designation", "Designation")}
-          <div><label className="label">Blood group</label><select className="input" value={v.bloodGroup} onChange={set("bloodGroup")}><option value="">—</option>{BLOOD_GROUPS.map((g) => <option key={g}>{g}</option>)}</select></div>
+          <div><label className="block"><span className="label">Blood group</span><select className="input" value={v.bloodGroup} onChange={set("bloodGroup")}><option value="">—</option>{BLOOD_GROUPS.map((g) => <option key={g}>{g}</option>)}</select></label></div>
           {F("address", "Address", { full: true })}
           {F("emergencyName", "Emergency contact name")}
           {F("emergencyMobile", "Emergency contact mobile", { inputMode: "numeric" })}

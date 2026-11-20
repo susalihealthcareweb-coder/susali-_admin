@@ -26,8 +26,8 @@ export default function RegistrationActions({ id, name, compact }) {
       <button className={`btn-primary ${compact ? "btn-sm" : "flex-1 sm:flex-none"}`} disabled={busy} onClick={() => decide("APPROVE")}><Icon name="check" size={15} strokeWidth={2.5} /> Approve</button>
       <button className={`btn-secondary text-red-700 ${compact ? "btn-sm" : "flex-1 sm:flex-none"}`} disabled={busy} onClick={() => setRejecting(true)}>Reject</button>
       <Dialog open={rejecting} onClose={() => setRejecting(false)} title={`Reject ${name}?`} footer={<><button className="btn-secondary" onClick={() => setRejecting(false)}>Back</button><button className="btn-danger" disabled={busy || note.trim().length < 3} onClick={() => decide("REJECT")}>Reject registration</button></>}>
-        <label className="label">Reason (shared with the employee)</label>
-        <textarea className="input" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="For example: not an employee of this company" />
+        <label className="block"><span className="label">Reason (shared with the employee)</span>
+        <textarea className="input" rows={3} value={note} onChange={(e) => setNote(e.target.value)} placeholder="For example: not an employee of this company" /></label>
       </Dialog>
     </div>
   );

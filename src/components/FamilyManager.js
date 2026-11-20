@@ -67,7 +67,7 @@ export default function FamilyManager({ members, apiBase = "/api/patient/family"
       <Dialog open={Boolean(edit)} onClose={() => setEdit(null)} title={edit?.id ? "Edit family member" : "Add family member"} footer={<><button className="btn-secondary" onClick={() => setEdit(null)}>Back</button><button className="btn-primary" form="f-family" disabled={busy}>{busy ? "Saving…" : "Save"}</button></>}>
         {v && (
           <form id="f-family" onSubmit={save} className="space-y-3">
-            <div><label className="label">Full name *</label><input className="input" required value={v.fullName} onChange={(e) => set("fullName", e.target.value)} /></div>
+            <div><label className="block"><span className="label">Full name *</span><input className="input" required value={v.fullName} onChange={(e) => set("fullName", e.target.value)} /></label></div>
             <div>
               <span className="label">Relation *</span>
               <div className="flex flex-wrap gap-1.5">
@@ -77,10 +77,10 @@ export default function FamilyManager({ members, apiBase = "/api/patient/family"
               </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
-              <div><label className="label">Gender *</label><select className="input" value={v.gender} onChange={(e) => set("gender", e.target.value)}>{GENDERS.map((g) => <option key={g}>{g}</option>)}</select></div>
-              <div><label className="label">Date of birth *</label><input type="date" className="input" required max={toInputDate(new Date())} value={v.dateOfBirth} onChange={(e) => set("dateOfBirth", e.target.value)} /></div>
-              <div><label className="label">Blood group</label><select className="input" value={v.bloodGroup} onChange={(e) => set("bloodGroup", e.target.value)}><option value="">—</option>{BLOOD_GROUPS.map((g) => <option key={g}>{g}</option>)}</select></div>
-              <div><label className="label">Mobile (optional)</label><input className="input" inputMode="numeric" maxLength={10} value={v.mobile} onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))} /></div>
+              <div><label className="block"><span className="label">Gender *</span><select className="input" value={v.gender} onChange={(e) => set("gender", e.target.value)}>{GENDERS.map((g) => <option key={g}>{g}</option>)}</select></label></div>
+              <div><label className="block"><span className="label">Date of birth *</span><input type="date" className="input" required max={toInputDate(new Date())} value={v.dateOfBirth} onChange={(e) => set("dateOfBirth", e.target.value)} /></label></div>
+              <div><label className="block"><span className="label">Blood group</span><select className="input" value={v.bloodGroup} onChange={(e) => set("bloodGroup", e.target.value)}><option value="">—</option>{BLOOD_GROUPS.map((g) => <option key={g}>{g}</option>)}</select></label></div>
+              <div><label className="block"><span className="label">Mobile (optional)</span><input className="input" inputMode="numeric" maxLength={10} value={v.mobile} onChange={(e) => set("mobile", e.target.value.replace(/\D/g, ""))} /></label></div>
             </div>
           </form>
         )}

@@ -33,7 +33,7 @@ export default function SettingsForm({ settings, templates }) {
       <section className="card card-pad">
         <h2 className="mb-3 text-sm font-semibold">Time limits and files</h2>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {NUMS.map(([k, l]) => <div key={k}><label className="label">{l}</label><input type="number" className="input" min={0} value={s[k]} onChange={(e) => setS({ ...s, [k]: e.target.value })} /></div>)}
+          {NUMS.map(([k, l]) => <div key={k}><label className="block"><span className="label">{l}</span><input type="number" className="input" min={0} value={s[k]} onChange={(e) => { const val = e.target.value; setS((x) => ({ ...x, [k]: val })); }} /></label></div>)}
         </div>
         <p className="mt-2 text-xs text-slate-500">Working days are Monday to Saturday.</p>
       </section>
@@ -47,8 +47,8 @@ export default function SettingsForm({ settings, templates }) {
               {t.map((x, i) => (
                 <tr key={x.key}>
                   <td className="text-sm font-medium">{x.label}</td>
-                  <td><input className="input" placeholder={x.defaultTemplate} value={x.whatsappTemplate} onChange={(e) => setT(t.map((y, j) => (j === i ? { ...y, whatsappTemplate: e.target.value } : y)))} /></td>
-                  <td><input className="input" placeholder="Default subject" value={x.emailSubject} onChange={(e) => setT(t.map((y, j) => (j === i ? { ...y, emailSubject: e.target.value } : y)))} /></td>
+                  <td><input className="input" aria-label={`${x.label}: WhatsApp template`} placeholder={x.defaultTemplate} value={x.whatsappTemplate} onChange={(e) => { const val = e.target.value; setT((cur) => cur.map((y, j) => (j === i ? { ...y, whatsappTemplate: val } : y))); }} /></td>
+                  <td><input className="input" aria-label={`${x.label}: email subject`} placeholder="Default subject" value={x.emailSubject} onChange={(e) => { const val = e.target.value; setT((cur) => cur.map((y, j) => (j === i ? { ...y, emailSubject: val } : y))); }} /></td>
                 </tr>
               ))}
             </tbody>

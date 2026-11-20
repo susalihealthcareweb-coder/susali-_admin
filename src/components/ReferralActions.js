@@ -127,14 +127,14 @@ function ForwardForm({ r, hospitals, departments, busy, onSubmit }) {
         Check: employee is active, the referral letter number (and photo, if attached) is valid, the department is right, and there is no duplicate open referral.
       </div>
       <div>
-        <label className="label">Department</label>
+        <label className="block"><span className="label">Department</span>
         <select className="input" value={departmentId} onChange={(e) => setDepartmentId(e.target.value)} required>
           <option value="">Choose…</option>
           {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-        </select>
+        </select></label>
       </div>
       <div>
-        <label className="label">Send to hospital</label>
+        <label className="block"><span className="label">Send to hospital</span>
         <select className="input" value={hospitalId} onChange={(e) => setHospitalId(e.target.value)} required>
           <option value="">Choose…</option>
           {hospitals.map((x) => (
@@ -142,13 +142,13 @@ function ForwardForm({ r, hospitals, departments, busy, onSubmit }) {
               {x.suggested ? "★ Suggested · " : ""}{x.name}, {x.city}{x.offersDepartment ? "" : " (department not listed)"}{x.declinedBefore ? " (declined this referral)" : ""} · {x.openReferrals} open
             </option>
           ))}
-        </select>
+        </select></label>
         {suggested && <p className="mt-1 text-xs text-brand-700">★ SUSALI suggests <b>{suggested.name}</b>: offers this department{suggested.sameCity ? ", same city as the company" : ""}, {suggested.openReferrals} open referrals.</p>}
         {h && !h.offersDepartment && <p className="mt-1 text-xs text-amber-700">This hospital does not list the selected department.</p>}
       </div>
       <div>
-        <label className="label">Notes for the hospital (optional)</label>
-        <textarea className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} />
+        <label className="block"><span className="label">Notes for the hospital (optional)</span>
+        <textarea className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} /></label>
       </div>
       <CallPatient contact={r.contact} checked={called} onCheck={setCalled} note={callNote} onNote={setCallNote} />
       <button className="btn-primary w-full py-2.5" disabled={busy || !hospitalId || !departmentId || !called}><span aria-hidden="true">✓</span> Accept &amp; send to hospital</button>
@@ -171,8 +171,8 @@ function TextDialog({ open, title, label, field, min, onClose, onSubmit, busy, d
   return (
     <Dialog open={open} onClose={onClose} title={title} footer={<Footer onClose={onClose} busy={busy} danger={danger} label={submitLabel} form={id} />}>
       <form id={id} onSubmit={(e) => { e.preventDefault(); onSubmit({ [field]: text }); }}>
-        <label className="label">{label}</label>
-        <textarea className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)} minLength={min || undefined} required={min > 0} maxLength={1000} />
+        <label className="block"><span className="label">{label}</span>
+        <textarea className="input" rows={4} value={text} onChange={(e) => setText(e.target.value)} minLength={min || undefined} required={min > 0} maxLength={1000} /></label>
       </form>
     </Dialog>
   );
@@ -187,12 +187,12 @@ function ReasonDialog({ open, title, reasons, requireRemarks, onClose, onSubmit,
       <form id={id} className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSubmit({ reason, remarks }); }}>
         {note && <p className="text-sm text-slate-600">{note}</p>}
         <div>
-          <label className="label">Reason</label>
-          <select className="input" value={reason} onChange={(e) => setReason(e.target.value)}>{reasons.map((x) => <option key={x}>{x}</option>)}</select>
+          <label className="block"><span className="label">Reason</span>
+          <select className="input" value={reason} onChange={(e) => setReason(e.target.value)}>{reasons.map((x) => <option key={x}>{x}</option>)}</select></label>
         </div>
         <div>
-          <label className="label">Remarks{requireRemarks ? "" : " (optional)"}</label>
-          <textarea className="input" rows={3} value={remarks} onChange={(e) => setRemarks(e.target.value)} required={requireRemarks} minLength={requireRemarks ? 3 : undefined} maxLength={1000} />
+          <label className="block"><span className="label">Remarks{requireRemarks ? "" : " (optional)"}</span>
+          <textarea className="input" rows={3} value={remarks} onChange={(e) => setRemarks(e.target.value)} required={requireRemarks} minLength={requireRemarks ? 3 : undefined} maxLength={1000} /></label>
         </div>
       </form>
     </Dialog>
@@ -206,8 +206,8 @@ function OverrideDialog({ open, onClose, onSubmit, busy, current }) {
     <Dialog open={open} onClose={onClose} title="Override status" footer={<Footer onClose={onClose} busy={busy} danger label="Override" form="f-override" />}>
       <form id="f-override" className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSubmit({ status, remarks }); }}>
         <p className="text-sm text-amber-700">This skips the normal workflow checks and is written to the audit log.</p>
-        <div><label className="label">New status</label><select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>{Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
-        <div><label className="label">Reason</label><textarea className="input" rows={3} required minLength={3} value={remarks} onChange={(e) => setRemarks(e.target.value)} /></div>
+        <div><label className="block"><span className="label">New status</span><select className="input" value={status} onChange={(e) => setStatus(e.target.value)}>{Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></label></div>
+        <div><label className="block"><span className="label">Reason</span><textarea className="input" rows={3} required minLength={3} value={remarks} onChange={(e) => setRemarks(e.target.value)} /></label></div>
       </form>
     </Dialog>
   );
@@ -218,8 +218,8 @@ function ReassignDialog({ open, onClose, onSubmit, busy, verifiers }) {
   return (
     <Dialog open={open} onClose={onClose} title="Reassign verifier" footer={<Footer onClose={onClose} busy={busy} label="Reassign" form="f-reassign" />}>
       <form id="f-reassign" onSubmit={(e) => { e.preventDefault(); onSubmit({ userId }); }}>
-        <label className="label">Give this referral to</label>
-        <select className="input" required value={userId} onChange={(e) => setUserId(e.target.value)}><option value="">Choose…</option>{verifiers.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}</select>
+        <label className="block"><span className="label">Give this referral to</span>
+        <select className="input" required value={userId} onChange={(e) => setUserId(e.target.value)}><option value="">Choose…</option>{verifiers.map((v) => <option key={v.id} value={v.id}>{v.name}</option>)}</select></label>
       </form>
     </Dialog>
   );
@@ -273,10 +273,10 @@ function TreatmentDialog({ open, onClose, onSubmit, busy, r }) {
   return (
     <Dialog open={open} onClose={onClose} title="Treatment details" footer={<Footer onClose={onClose} busy={busy} label="Save" form="f-treat" />}>
       <form id="f-treat" className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSubmit({ visitType, treatingDoctor, admissionDate: visitType === "ADMISSION" ? admissionDate : null, notes }); }}>
-        <div><label className="label">Visit type</label><select className="input" value={visitType} onChange={(e) => setVisitType(e.target.value)}><option value="OPD">OPD</option><option value="ADMISSION">Admission</option></select></div>
-        <div><label className="label">Treating doctor</label><input className="input" value={treatingDoctor} onChange={(e) => setDoctor(e.target.value)} /></div>
-        {visitType === "ADMISSION" && <div><label className="label">Admission date</label><input type="date" className="input" required value={admissionDate} onChange={(e) => setAdmission(e.target.value)} /></div>}
-        <div><label className="label">Notes</label><textarea className="input" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} /></div>
+        <div><label className="block"><span className="label">Visit type</span><select className="input" value={visitType} onChange={(e) => setVisitType(e.target.value)}><option value="OPD">OPD</option><option value="ADMISSION">Admission</option></select></label></div>
+        <div><label className="block"><span className="label">Treating doctor</span><input className="input" value={treatingDoctor} onChange={(e) => setDoctor(e.target.value)} /></label></div>
+        {visitType === "ADMISSION" && <div><label className="block"><span className="label">Admission date</span><input type="date" className="input" required value={admissionDate} onChange={(e) => setAdmission(e.target.value)} /></label></div>}
+        <div><label className="block"><span className="label">Notes</span><textarea className="input" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} /></label></div>
       </form>
     </Dialog>
   );

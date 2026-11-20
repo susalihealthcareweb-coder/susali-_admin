@@ -20,12 +20,12 @@ export default async function Reports({ params, searchParams }) {
     <>
       <PageHeader title="Reports and exports" subtitle={role === "CLUSTER_MANAGER" ? "Referrals in your cluster." : role === "HOSPITAL_USER" ? "Referrals forwarded to your hospital." : "All referrals. Diagnosis is left out so reports can be shared offline."} />
       <form action="/api/reports/export" method="get" className="card card-pad grid max-w-3xl gap-4 sm:grid-cols-2">
-        <div><label className="label">From</label><input type="date" className="input" name="from" defaultValue={sp.from} /></div>
-        <div><label className="label">To</label><input type="date" className="input" name="to" defaultValue={sp.to} /></div>
+        <div><label className="block"><span className="label">From</span><input type="date" className="input" name="from" defaultValue={sp.from} /></label></div>
+        <div><label className="block"><span className="label">To</span><input type="date" className="input" name="to" defaultValue={sp.to} /></label></div>
         {clusters.length > 1 && <Select sp={sp} name="clusterId" label="Cluster" items={clusters} />}
         {companies.length > 0 && <Select sp={sp} name="companyId" label="Company" items={companies} />}
         {hospitals.length > 0 && <Select sp={sp} name="hospitalId" label="Hospital" items={hospitals} />}
-        <div><label className="label">Status</label><select className="input" name="status" defaultValue={sp.status || ""}><option value="">All</option>{Object.entries(STATUS).filter(([k]) => k !== "DRAFT").map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></div>
+        <div><label className="block"><span className="label">Status</span><select className="input" name="status" defaultValue={sp.status || ""}><option value="">All</option>{Object.entries(STATUS).filter(([k]) => k !== "DRAFT").map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}</select></label></div>
         <div className="flex gap-2 sm:col-span-2">
           <button className="btn-primary" name="format" value="xlsx">Download Excel</button>
           <button className="btn-secondary" name="format" value="pdf">Download PDF</button>
@@ -37,6 +37,6 @@ export default async function Reports({ params, searchParams }) {
 
 function Select({ name, label, items, sp }) {
   return (
-    <div><label className="label">{label}</label><select className="input" name={name} defaultValue={sp[name] || ""}><option value="">All</option>{items.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select></div>
+    <div><label className="block"><span className="label">{label}</span><select className="input" name={name} defaultValue={sp[name] || ""}><option value="">All</option>{items.map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</select></label></div>
   );
 }
