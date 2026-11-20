@@ -1,4 +1,5 @@
 "use client";
+import { ask } from "./Confirm";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Dialog from "./Dialog";
@@ -26,7 +27,7 @@ export default function FamilyManager({ members, apiBase = "/api/patient/family"
     if (ok) { setEdit(null); router.refresh(); }
   };
   const remove = async (m) => {
-    if (!confirm(`Remove ${m.fullName} from your card? Their past referrals stay on record.`)) return;
+    if (!(await ask({ title: `Remove ${m.fullName} from your card?`, message: "Their past referrals stay on record.", confirmLabel: "Remove", danger: true }))) return;
     if (await run(() => api(`${apiBase}/${m.id}`, { method: "DELETE" }), "Removed")) router.refresh();
   };
 

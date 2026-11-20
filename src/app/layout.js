@@ -1,6 +1,7 @@
 import { Montserrat, Cormorant_Garamond, Cinzel } from "next/font/google";
 import "./globals.css";
 import Toaster from "@/components/Toaster";
+import ConfirmHost from "@/components/Confirm";
 import PwaRegister from "@/components/PwaRegister";
 
 // Fonts chosen to match the logo: Cinzel wordmark, Cormorant headings, Montserrat text.
@@ -24,6 +25,7 @@ export default function RootLayout({ children }) {
       <body className="min-h-full font-sans">
         {children}
         <Toaster />
+        <ConfirmHost />
         <PwaRegister />
       </body>
     </html>

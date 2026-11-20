@@ -42,7 +42,7 @@ export async function referralWhere(me, { status, q, hospitalId, clusterId, comp
 
 export const listInclude = {
   employee: { select: { id: true, fullName: true, employeeCode: true, mobile: true } },
-  familyMember: { select: { fullName: true, relation: true } },
+  familyMember: { select: { fullName: true, relation: true, mobile: true } },
   hospital: { select: { id: true, name: true } },
   department: { select: { name: true } },
   lockedBy: { select: { id: true, name: true } },

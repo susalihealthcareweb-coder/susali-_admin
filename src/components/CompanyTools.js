@@ -1,4 +1,5 @@
 "use client";
+import { ask } from "./Confirm";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Dialog from "./Dialog";
@@ -33,7 +34,7 @@ export function CompanyStatusToggle({ id, isActive }) {
   const router = useRouter();
   return (
     <button className={isActive ? "btn-ghost text-red-700" : "btn-secondary"} onClick={async () => {
-      if (isActive && !confirm("Deactivate this company? Its employees will not be able to raise referrals.")) return;
+      if (isActive && !(await ask({ title: "Deactivate this company?", message: "Its employees will not be able to raise referrals.", confirmLabel: "Deactivate", danger: true }))) return;
       if (await run(() => api(`/api/companies/${id}`, { method: "PATCH", data: { isActive: !isActive } }), isActive ? "Company deactivated" : "Company activated")) router.refresh();
     }}>{isActive ? "Deactivate" : "Activate"}</button>
   );
@@ -98,7 +99,7 @@ export function EmployeeStatusToggle({ id, isActive }) {
   const router = useRouter();
   return (
     <button className={`btn-ghost btn-sm ${isActive ? "text-red-700" : ""}`} onClick={async () => {
-      if (isActive && !confirm("Mark this employee inactive? They will not be able to log in or raise referrals.")) return;
+      if (isActive && !(await ask({ title: "Mark this employee inactive?", message: "They will not be able to log in or raise referrals.", confirmLabel: "Mark inactive", danger: true }))) return;
       if (await run(() => api(`/api/employees/${id}`, { method: "PATCH", data: { isActive: !isActive } }), isActive ? "Marked inactive" : "Reactivated")) router.refresh();
     }}>{isActive ? "Deactivate" : "Reactivate"}</button>
   );

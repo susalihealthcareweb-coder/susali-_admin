@@ -31,7 +31,7 @@ export default async function Queue({ params }) {
                 me={me}
                 waiting
                 href={`${base}/referrals/${r.id}`}
-                actions={lockedByOther && role === "SUPPORT" ? <Link href={`${base}/referrals/${r.id}`} className="btn-ghost btn-sm w-full">View</Link> : <QueueActions id={r.id} href={`${base}/referrals/${r.id}`} declined={r.status === "HOSPITAL_DECLINED"} />}
+                actions={lockedByOther && role === "SUPPORT" ? <Link href={`${base}/referrals/${r.id}`} className="btn-ghost btn-sm w-full">View</Link> : <QueueActions id={r.id} contact={{ name: r.patientName || r.employee?.fullName, relation: r.patientRelation || "Self", mobile: r.familyMember?.mobile || null, holderName: r.employee?.fullName, holderMobile: r.employee?.mobile }} href={`${base}/referrals/${r.id}`} declined={r.status === "HOSPITAL_DECLINED"} />}
               />
             );
           })}

@@ -1,4 +1,6 @@
 "use client";
+import { ask } from "./Confirm";
+import CallPatient from "./CallPatient";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Dialog from "./Dialog";
@@ -81,7 +83,7 @@ export default function ReferralActions({ role, me, referral: r, hospitals, depa
       blocks.push(<button key="treat" className="btn-secondary w-full" onClick={() => setDialog("treatment")}>{r.status === "VISITED" ? "Start treatment (OPD / admission)" : "Update treatment details"}</button>);
       blocks.push(
         <div key="complete">
-          <button className="btn-primary w-full" disabled={busy || !r.hasPrescription} onClick={() => confirm("Complete this case? The patient will be told their reports are ready.") && act("complete", null, "Case completed")}>Complete case</button>
+          <button className="btn-primary w-full" disabled={busy || !r.hasPrescription} onClick={async () => (await ask({ title: "Complete this case?", message: "The patient will be told their reports are ready. Files can no longer be changed.", confirmLabel: "Complete case" })) && act("complete", null, "Case completed")}>Complete case</button>
           {!r.hasPrescription && <p className="mt-1 text-xs text-slate-500">Upload at least one prescription first.</p>}
         </div>
       );
@@ -116,9 +118,11 @@ function ForwardForm({ r, hospitals, departments, busy, onSubmit }) {
   const [departmentId, setDepartmentId] = useState(r.departmentId || "");
   const [hospitalId, setHospitalId] = useState(r.hospitalId || suggested?.id || "");
   const [notes, setNotes] = useState("");
+  const [called, setCalled] = useState(false);
+  const [callNote, setCallNote] = useState("");
   const h = hospitals.find((x) => x.id === hospitalId);
   return (
-    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSubmit({ hospitalId, departmentId, notes }); }}>
+    <form className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSubmit({ hospitalId, departmentId, notes, patientContacted: called, callNote }); }}>
       <div className="rounded-lg bg-slate-50 p-3 text-xs text-slate-600">
         Check: employee is active, the referral letter number (and photo, if attached) is valid, the department is right, and there is no duplicate open referral.
       </div>
@@ -146,7 +150,8 @@ function ForwardForm({ r, hospitals, departments, busy, onSubmit }) {
         <label className="label">Notes for the hospital (optional)</label>
         <textarea className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} />
       </div>
-      <button className="btn-primary w-full py-2.5" disabled={busy || !hospitalId || !departmentId}><span aria-hidden="true">✓</span> Accept &amp; send to hospital</button>
+      <CallPatient contact={r.contact} checked={called} onCheck={setCalled} note={callNote} onNote={setCallNote} />
+      <button className="btn-primary w-full py-2.5" disabled={busy || !hospitalId || !departmentId || !called}><span aria-hidden="true">✓</span> Accept &amp; send to hospital</button>
     </form>
   );
 }

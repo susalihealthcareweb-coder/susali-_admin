@@ -1,4 +1,5 @@
 "use client";
+import { ask } from "./Confirm";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, run, uploadFile } from "./api-client";
@@ -27,7 +28,7 @@ export function DocumentList({ documents, deletable, group = true }) {
     } else window.open(r.url, "_blank", "noopener");
   };
   const remove = async (d) => {
-    if (!confirm(`Remove ${d.fileName}?`)) return;
+    if (!(await ask({ title: "Remove file?", message: d.fileName, confirmLabel: "Remove", danger: true }))) return;
     if (await run(() => api(`/api/documents/${d.id}`, { method: "DELETE" }), "File removed")) router.refresh();
   };
   const groups = group

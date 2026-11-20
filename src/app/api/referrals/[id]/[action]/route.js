@@ -56,7 +56,9 @@ const ACTIONS = {
   async forward(me, r, req, input) {
     must(me, VERIFIER_ROLES);
     r = await ensureLock(me, r, req);
-    const d = z.object({ hospitalId: v.optObjectId, departmentId: v.optObjectId, notes: v.optStr }).parse(input);
+    const d = z.object({ hospitalId: v.optObjectId, departmentId: v.optObjectId, notes: v.optStr, patientContacted: z.boolean().optional(), callNote: z.string().trim().max(1000).optional().nullable() }).parse(input);
+    // Support calls the patient before sending the referral to a hospital.
+    if (d.patientContacted !== true) throw new ApiError(400, "Call the patient first, then tick \"I spoke to the patient\".");
     const hospitalId = d.hospitalId || r.hospitalId;
     const departmentId = d.departmentId || r.departmentId;
     if (!hospitalId) throw new ApiError(400, "Choose the hospital to send this referral to.");
@@ -67,7 +69,7 @@ const ACTIONS = {
     const updated = await changeStatus({
       referral: r, to: "FORWARDED", me, req,
       data: { hospitalId, departmentId, verifierNotes: d.notes, verifiedById: me.id, lockedById: null, forwardedAt: new Date(), declineReason: null, escalations: [] },
-      remarks: `Verified and forwarded to ${hospital.name}${changed}${d.notes ? ". Notes: " + d.notes : ""}`,
+      remarks: `Patient contacted by phone${d.callNote ? ": " + d.callNote : ""}. Verified and forwarded to ${hospital.name}${changed}${d.notes ? ". Notes: " + d.notes : ""}`,
     });
     await notify("REFERRAL_FORWARDED", { referral: updated });
     return updated;

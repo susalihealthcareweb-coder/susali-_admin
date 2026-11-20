@@ -129,7 +129,8 @@ check("support requests info", r, (x) => x.data.referral?.status === "INFO_REQUE
 check("patient re-uploads", await upload(patient, "REFERRAL_LETTER", "letter-clear.jpg", "image/jpeg", "JPEGDATA"), is(201));
 check("patient resubmits", await patient.req(`/api/referrals/${id}/submit`, { method: "POST", json: {} }), (x) => x.data.referral?.status === "SUBMITTED" && x.data.referral.referralNo === refNo);
 await support.req(`/api/referrals/${id}/lock`, { method: "POST", json: {} });
-r = await support.req(`/api/referrals/${id}/forward`, { method: "POST", json: { notes: "Urgent cardiology review" } });
+check("forward refused without calling the patient", await support.req(`/api/referrals/${id}/forward`, { method: "POST", json: { notes: "Urgent cardiology review" } }), is(400));
+r = await support.req(`/api/referrals/${id}/forward`, { method: "POST", json: { notes: "Urgent cardiology review", patientContacted: true, callNote: "Patient confirmed, will visit tomorrow" } });
 check("support forwards", r, (x) => x.data.referral?.status === "FORWARDED");
 
 // Hospital handles
@@ -225,8 +226,8 @@ check("approval cannot be repeated", await cm.req(`/api/employees/${pend.id}/app
   const top = sug.data.rows?.[0];
   check("hospital suggestion offers the department", top, (t) => Boolean(t?.suggested && t.offersDepartment));
   check("patient cannot see suggestions", await patient.req(`/api/referrals/${qid2}/suggestions`), is(403));
-  check("accept needs a hospital", await support.req(`/api/referrals/${qid2}/forward`, { method: "POST", json: {} }), (x) => x.status === 400 && /hospital/i.test(x.data.error));
-  check("accept with suggested hospital", await support.req(`/api/referrals/${qid2}/forward`, { method: "POST", json: { hospitalId: top.id } }), (x) => x.data.referral?.status === "FORWARDED" && x.data.referral.hospitalId === top.id);
+  check("accept needs a hospital", await support.req(`/api/referrals/${qid2}/forward`, { method: "POST", json: { patientContacted: true } }), (x) => x.status === 400 && /hospital/i.test(x.data.error));
+  check("accept with suggested hospital", await support.req(`/api/referrals/${qid2}/forward`, { method: "POST", json: { hospitalId: top.id, patientContacted: true } }), (x) => x.data.referral?.status === "FORWARDED" && x.data.referral.hospitalId === top.id);
 }
 
 // Sudo Admin may add but not deactivate; Super Admin may.

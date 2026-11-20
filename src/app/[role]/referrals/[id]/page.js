@@ -172,7 +172,7 @@ export default async function ReferralPage({ params }) {
           <ReferralActions
             role={role}
             me={{ id: me.id }}
-            referral={JSON.parse(JSON.stringify({ id: r.id, referralNo: r.referralNo, status: r.status, lockedById: r.lockedById, hospitalId: r.hospitalId, departmentId: r.departmentId, visitType: r.visitType, treatingDoctor: r.treatingDoctor, admissionDate: r.admissionDate, treatmentNotes: r.treatmentNotes, hasPrescription: medical.some((d) => d.category === "PRESCRIPTION") }))}
+            referral={JSON.parse(JSON.stringify({ id: r.id, referralNo: r.referralNo, status: r.status, lockedById: r.lockedById, hospitalId: r.hospitalId, departmentId: r.departmentId, visitType: r.visitType, treatingDoctor: r.treatingDoctor, admissionDate: r.admissionDate, treatmentNotes: r.treatmentNotes, hasPrescription: medical.some((d) => d.category === "PRESCRIPTION"), contact: { name: r.patientName || emp.fullName, relation: r.patientRelation || "Self", mobile: r.familyMember?.mobile || null, holderName: emp.fullName, holderMobile: emp.mobile } }))}
             hospitals={hospitals}
             departments={departments}
             verifiers={verifiers}

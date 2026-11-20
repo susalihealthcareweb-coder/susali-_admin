@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Dialog from "./Dialog";
 import Icon from "./Icon";
+import CallPatient from "./CallPatient";
 import { api, run } from "./api-client";
 import { REJECT_REASONS } from "@/lib/constants";
 
 // Accept (verify and forward to the requested hospital) or Reject, right
 // from a queue card. "Review" opens the full referral to change hospital,
 // read the letter or ask for details.
-export default function QueueActions({ id, href, disabled, declined }) {
+export default function QueueActions({ id, href, disabled, declined, contact }) {
   const router = useRouter();
   const [open, setOpen] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -20,6 +21,8 @@ export default function QueueActions({ id, href, disabled, declined }) {
   const [done, setDone] = useState(null);
   const [options, setOptions] = useState(null);
   const [hospitalId, setHospitalId] = useState("");
+  const [called, setCalled] = useState(false);
+  const [callNote, setCallNote] = useState("");
   const openAccept = async () => {
     setOpen("accept");
     if (options) return;
@@ -53,7 +56,7 @@ export default function QueueActions({ id, href, disabled, declined }) {
         <Link href={href} className="btn-ghost btn-sm">Review</Link>
       </div>
 
-      <Dialog open={open === "accept"} onClose={() => setOpen(null)} title="Accept and choose the hospital" footer={<><button className="btn-secondary" onClick={() => setOpen(null)}>Back</button><button className="btn-primary" disabled={busy || !hospitalId} onClick={() => act("forward", { hospitalId, notes }, "Referral accepted and sent")}>{busy ? "Sending…" : "Accept & send"}</button></>}>
+      <Dialog open={open === "accept"} onClose={() => setOpen(null)} title="Accept and choose the hospital" footer={<><button className="btn-secondary" onClick={() => setOpen(null)}>Back</button><button className="btn-primary" disabled={busy || !hospitalId || !called} onClick={() => act("forward", { hospitalId, notes, patientContacted: called, callNote }, "Referral accepted and sent")}>{busy ? "Sending…" : "Accept & send"}</button></>}>
         {declined && <p className="mb-3 rounded-lg bg-orange-50 px-3 py-2 text-xs text-orange-800">The previous hospital declined. It is listed last.</p>}
         <label className="label">Hospital</label>
         {options === null ? <p className="text-sm text-slate-500">Finding the best hospital…</p> : (
@@ -65,6 +68,7 @@ export default function QueueActions({ id, href, disabled, declined }) {
         {chosen?.suggested && <p className="mt-1 text-xs text-brand-700">★ Offers this department{chosen.sameCity ? ", same city as the company" : ""}, {chosen.openReferrals} open referrals.</p>}
         <label className="label mt-4">Notes for the hospital (optional)</label>
         <textarea className="input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} maxLength={500} />
+        <div className="mt-4"><CallPatient contact={contact} checked={called} onCheck={setCalled} note={callNote} onNote={setCallNote} /></div>
         <p className="mt-2 text-xs text-slate-500">The hospital, patient and Cluster Manager are notified. Use Review to see the letter first.</p>
       </Dialog>
 

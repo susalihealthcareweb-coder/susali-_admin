@@ -117,6 +117,10 @@ try {
     throw Object.assign(new Error("stopped"), { quiet: true });
   }
 
+  // Each run adds family members to the demo patient; retire the extras so the
+  // 12-member limit is never reached (seeded: Srinivas, Aarav, Kamala). TEST database only.
+  await run("node", ["-e", `const { PrismaClient } = require("@prisma/client"); const p = new PrismaClient(); (async () => { const e = await p.employee.findUnique({ where: { mobile: "9010561998" } }); const r = await p.familyMember.updateMany({ where: { employeeId: e.id, isActive: true, fullName: { notIn: ["Srinivas Prasad", "Aarav Prasad", "Kamala Devi"] } }, data: { isActive: false } }); console.log("Retired " + r.count + " test family members"); await p.$disconnect(); })();`]);
+
   step("Website workflow (scripts/e2e.mjs)");
   results.push(["website", await run("node", ["scripts/e2e.mjs", BASE])]);
 
@@ -137,6 +141,8 @@ try {
     const javas = ["/opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home", "/Applications/Android Studio.app/Contents/jbr/Contents/Home"];
     const java = process.env.JAVA_HOME || javas.find((j) => existsSync(j));
     const javaEnv = java ? { JAVA_HOME: java, MAESTRO_CLI_NO_ANALYTICS: "1" } : {};
+    // Start the iPhone simulator if none is running (the test app is installed there).
+    await run("bash", ["-c", 'xcrun simctl list devices booted | grep -q Booted || { echo "Starting the iPhone 17 Pro simulator"; xcrun simctl boot "iPhone 17 Pro" && sleep 20; }']);
     await clearTestOtps();
     const code = await run("maestro", ["test", flows, "--format", "junit", "--output", path.join(ROOT, ".next", "test", "maestro-report.xml")], { env: { ...env, ...javaEnv }, cwd: path.dirname(flows) });
     results.push(["app screens", code]);
