@@ -90,13 +90,14 @@ function OtpPanel({ next }) {
     }
     setBusy(false);
   };
-  const verify = async (e) => {
+  // Runs on the button, and on its own once the 6th digit is typed (as in the app).
+  const verify = async (e, code = otp) => {
     e?.preventDefault();
-    if (otp.length !== 6) return;
+    if (code.length !== 6 || busy) return;
     setBusy(true);
     setError("");
     try {
-      const r = await api("/api/auth/otp/verify", { method: "POST", data: { mobile, otp } });
+      const r = await api("/api/auth/otp/verify", { method: "POST", data: { mobile, otp: code } });
       window.location.href = next?.startsWith("/patient") ? next : r.redirect || "/patient";
     } catch (err) {
       setError(err.message);
@@ -127,7 +128,7 @@ function OtpPanel({ next }) {
         <span className="text-slate-600">Code sent to <b>+91 {mobile}</b></span>
         <button type="button" className="link text-xs" onClick={() => { setStep("mobile"); setError(""); }}>Change</button>
       </div>
-      <OtpInput value={otp} onChange={(v) => { setOtp(v); setError(""); }} autoFocus error={Boolean(error)} disabled={busy} />
+      <OtpInput value={otp} onChange={(v) => { setOtp(v); setError(""); if (v.length === 6 && otp.length < 6) verify(null, v); }} autoFocus error={Boolean(error)} disabled={busy} />
       {dev && <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">SMS codes are not active yet. Use the temporary code from SUSALI.</p>}
       <ErrorBox>{error}</ErrorBox>
       <button className="btn-primary w-full py-2.5" disabled={busy || otp.length !== 6}>{busy ? <Spinner /> : null}{busy ? "Verifying…" : "Verify and log in"}</button>

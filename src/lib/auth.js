@@ -63,9 +63,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const result = await verifyOtpFor(mobile, otp, "LOGIN");
           if (result !== "ok") throw new LoginError(result);
         }
-        await prisma.employee.update({ where: { id: employee.id }, data: { lastLoginAt: new Date() } });
         const h = await headers();
-        await audit({ actorId: employee.id, actorRole: "PATIENT", action: "LOGIN", entity: "Employee", entityId: employee.id, h });
+        await Promise.all([
+          prisma.employee.update({ where: { id: employee.id }, data: { lastLoginAt: new Date() } }),
+          audit({ actorId: employee.id, actorRole: "PATIENT", action: "LOGIN", entity: "Employee", entityId: employee.id, h }),
+        ]);
         return { id: employee.id, name: employee.fullName, role: "PATIENT" };
       },
     }),

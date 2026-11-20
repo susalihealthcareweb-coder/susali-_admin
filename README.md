@@ -66,6 +66,14 @@ Set `SEED_DEMO=0` before seeding production, and change the Super Admin password
 
 In production each of these refuses to run unconfigured instead of simulating.
 
+## Automated tests
+
+```bash
+npm run test:e2e
+```
+
+Runs everything in a throwaway setup: a separate `susali_test` database on the same MongoDB cluster (your real data is never touched), its own server on port 3200 (your dev server can keep running), and SMS, WhatsApp and email simulated. It runs the website workflow test below and, if `../susali-mobile` exists, the mobile app API test (every role: Support queue and forwarding, hospital accept / OTP check-in / treatment / bills / completion, admin reassign / reopen / override, and what each role must not be able to do). Add `-- --reset` to wipe the test database first. Exits non-zero if anything fails.
+
 ## End-to-end test
 
 With the dev server running and the demo seed loaded:

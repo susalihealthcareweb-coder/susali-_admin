@@ -45,12 +45,12 @@ export async function verifyOtpFor(mobile, otp, purpose = "LOGIN") {
   });
   if (!req || req.expiresAt < new Date()) return "expired";
   if (req.attempts >= MAX_ATTEMPTS) return "too_many_attempts";
-  await prisma.otpRequest.update({ where: { id: req.id }, data: { attempts: { increment: 1 } } });
   const good = isReviewLogin(mobile)
     ? otp === process.env.REVIEW_LOGIN_OTP
     : fixedOtp() ? otp === fixedOtp() : await msg91VerifyOtp(mobile, otp);
+  // One write records the attempt and, when correct, marks the code used.
+  await prisma.otpRequest.update({ where: { id: req.id }, data: { attempts: { increment: 1 }, ...(good ? { verified: true } : {}) } });
   if (!good) return req.attempts + 1 >= MAX_ATTEMPTS ? "too_many_attempts" : "invalid_otp";
-  await prisma.otpRequest.update({ where: { id: req.id }, data: { verified: true } });
   return "ok";
 }
 

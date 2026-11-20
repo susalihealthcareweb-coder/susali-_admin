@@ -14,7 +14,11 @@ export const POST = route(async (req) => {
   if (!emp || !emp.isActive) throw new ApiError(404, OTP_MESSAGES.not_employee);
   const res = await verifyOtpFor(mobile, otp, "LOGIN");
   if (res !== "ok") throw new ApiError(401, OTP_MESSAGES[res] || OTP_MESSAGES.invalid_otp);
-  await prisma.employee.update({ where: { id: emp.id }, data: { lastLoginAt: new Date() } });
-  await audit({ actorId: emp.id, actorRole: "PATIENT", action: "LOGIN", entity: "Employee", entityId: emp.id, after: { client: "mobile" }, req });
-  return mobileSession({ id: emp.id, role: "PATIENT" });
+  // Independent writes run alongside building the session, not one after another.
+  const [session] = await Promise.all([
+    mobileSession({ id: emp.id, role: "PATIENT" }),
+    prisma.employee.update({ where: { id: emp.id }, data: { lastLoginAt: new Date() } }),
+    audit({ actorId: emp.id, actorRole: "PATIENT", action: "LOGIN", entity: "Employee", entityId: emp.id, after: { client: "mobile" }, req }),
+  ]);
+  return session;
 });

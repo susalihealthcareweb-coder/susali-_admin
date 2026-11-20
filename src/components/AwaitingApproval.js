@@ -8,7 +8,7 @@ export default function AwaitingApproval({ company }) {
         <span className="relative grid h-16 w-16 place-items-center rounded-full bg-amber-100 text-amber-700"><Icon name="clock" size={28} /></span>
       </div>
       <h2 className="mt-4 text-lg font-semibold">Waiting for approval</h2>
-      <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">Your Cluster Manager for {company} has been notified. You can raise referrals as soon as they approve your registration. We&apos;ll send you a WhatsApp message.</p>
+      <p className="mx-auto mt-1 max-w-sm text-sm text-slate-600">Your Cluster Manager for {company} has been notified. You can raise referrals as soon as they approve your registration. Log in again later to check, or watch your alerts.</p>
     </div>
   );
 }

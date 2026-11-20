@@ -75,10 +75,10 @@ export default async function PatientReferral({ params }) {
               <Field label="Patient">{who.name}{who.relation !== "Self" ? ` (${who.relation})` : ""}</Field>
               <Field label="Hospital">{r.hospital?.name || "To be assigned by SUSALI"}</Field>
               <Field label="Department">{r.department?.name}</Field>
-              <Field label="Dispensary">{r.dispensary?.name}</Field>
-              <Field label="Superintendent hospital">{r.superintendentHospital?.name}</Field>
+              {r.dispensary ? <Field label="Dispensary">{r.dispensary?.name}</Field> : null}
+              {r.superintendentHospital ? <Field label="Superintendent hospital">{r.superintendentHospital?.name}</Field> : null}
               <Field label="Letter no">{r.referralLetterNo}</Field>
-              <Field label="Referral date">{fmtDate(r.referralDate)}</Field>
+              {r.referralDate ? <Field label="Referral date">{fmtDate(r.referralDate)}</Field> : null}
             </dl>
           </Section>
           {mine.length > 0 && <Section title="Letters you uploaded"><DocumentList documents={plain(mine)} group={false} /></Section>}

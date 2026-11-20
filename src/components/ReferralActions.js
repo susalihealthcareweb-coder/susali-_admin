@@ -237,19 +237,19 @@ function VisitDialog({ open, onClose, onSubmit, busy, r }) {
     <Dialog open={open} onClose={onClose} title="Mark patient visited" footer={<Footer onClose={onClose} busy={busy} label="Confirm visit" form="f-visit" />}>
       <form id="f-visit" className="space-y-3" onSubmit={(e) => { e.preventDefault(); onSubmit({ referralNo, method, otp }); }}>
         <div>
-          <label className="label">Referral number from the patient</label>
-          <input className="input font-mono uppercase" required value={referralNo} onChange={(e) => setReferralNo(e.target.value)} placeholder={r.referralNo.replace(/\d{6}$/, "000000")} />
+          <label className="label" htmlFor="visit-ref-no">Referral number from the patient</label>
+          <input id="visit-ref-no" className="input font-mono uppercase" required value={referralNo} onChange={(e) => setReferralNo(e.target.value)} placeholder={r.referralNo.replace(/\d{6}$/, "000000")} />
         </div>
         <fieldset>
           <legend className="label">Confirm identity by</legend>
           <div className="flex gap-4 text-sm">
-            <label className="flex items-center gap-2"><input type="radio" checked={method === "OTP"} onChange={() => setMethod("OTP")} /> Mobile OTP</label>
-            <label className="flex items-center gap-2"><input type="radio" checked={method === "ID_CARD"} onChange={() => setMethod("ID_CARD")} /> Employee ID card</label>
+            <label className="flex items-center gap-2"><input type="radio" name="visit-method" value="OTP" checked={method === "OTP"} onChange={() => setMethod("OTP")} /> Mobile OTP</label>
+            <label className="flex items-center gap-2"><input type="radio" name="visit-method" value="ID_CARD" checked={method === "ID_CARD"} onChange={() => setMethod("ID_CARD")} /> Employee ID card</label>
           </div>
         </fieldset>
         {method === "OTP" ? (
           <div className="flex items-end gap-2">
-            <div className="flex-1"><label className="label">OTP {sent && <span className="font-normal text-slate-500">sent to {sent}</span>}</label><input className="input tracking-widest" inputMode="numeric" maxLength={6} required value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} /></div>
+            <div className="flex-1"><label className="label" htmlFor="visit-otp">OTP {sent && <span className="font-normal text-slate-500">sent to {sent}</span>}</label><input id="visit-otp" autoComplete="one-time-code" className="input tracking-widest" inputMode="numeric" maxLength={6} required value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))} /></div>
             <button type="button" className="btn-secondary" onClick={sendOtp} disabled={sending}>{sent ? "Resend" : "Send OTP"}</button>
           </div>
         ) : (

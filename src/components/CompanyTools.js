@@ -54,7 +54,7 @@ export function EmployeeDialog({ companyId, companies, employee, trigger }) {
     e.preventDefault();
     setBusy(true);
     if (!employee && !company) { setBusy(false); return toast("Choose the company first.", "error"); }
-    const ok = await run(() => api(employee ? `/api/employees/${employee.id}` : `/api/companies/${company}/employees`, { method: employee ? "PATCH" : "POST", data: v }), employee ? "Employee saved" : "Employee added; WhatsApp welcome queued");
+    const ok = await run(() => api(employee ? `/api/employees/${employee.id}` : `/api/companies/${company}/employees`, { method: employee ? "PATCH" : "POST", data: v }), employee ? "Employee saved" : "Employee added");
     setBusy(false);
     if (ok) { setOpen(false); if (!employee) setV(EMPTY); router.refresh(); }
   };

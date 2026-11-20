@@ -103,7 +103,7 @@ export default async function ReferralPage({ params }) {
             <div className="mt-4 border-t border-[#efe7d6] pt-4">
               <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-gold-700">Card holder (employee)</div>
               <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-                <Field label="Employee"><Link className="link" href={`${base}/employees/${emp.id}`}>{snap.name || emp.fullName}</Link></Field>
+                <Field label="Employee">{me.role === "HOSPITAL_USER" ? (snap.name || emp.fullName) : <Link className="link" href={`${base}/employees/${emp.id}`}>{snap.name || emp.fullName}</Link>}</Field>
                 <Field label="Employee ID">{snap.employeeCode || emp.employeeCode}</Field>
                 <Field label="Employee status">{emp.isActive ? <Badge tone="green">Active</Badge> : <Badge tone="red">Inactive</Badge>}</Field>
                 <Field label="Mobile">{snap.mobile || emp.mobile}</Field>
@@ -115,17 +115,17 @@ export default async function ReferralPage({ params }) {
 
           <Section title="Referral details">
             <dl className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <Field label="Dispensary visited">{r.dispensary?.name}</Field>
-              <Field label="Dispensary visit date">{fmtDate(r.dispensaryVisitDate)}</Field>
-              <Field label="Superintendent hospital">{r.superintendentHospital?.name}</Field>
-              <Field label="Superintendent / doctor">{r.superintendentName}</Field>
+              {r.dispensary ? <Field label="Dispensary visited">{r.dispensary?.name}</Field> : null}
+              {r.dispensaryVisitDate ? <Field label="Dispensary visit date">{fmtDate(r.dispensaryVisitDate)}</Field> : null}
+              {r.superintendentHospital ? <Field label="Superintendent hospital">{r.superintendentHospital?.name}</Field> : null}
+              {r.superintendentName ? <Field label="Superintendent / doctor">{r.superintendentName}</Field> : null}
               <Field label="Referral letter no">{r.referralLetterNo}</Field>
-              <Field label="Referral date">{fmtDate(r.referralDate)}</Field>
+              {r.referralDate ? <Field label="Referral date">{fmtDate(r.referralDate)}</Field> : null}
               <Field label="Hospital">{r.hospital?.name || <span className="text-amber-700">To be assigned by SUSALI</span>}</Field>
               <Field label="Department">{r.department?.name}</Field>
               <Field label="Submitted">{fmtDateTime(r.submittedAt)}</Field>
             </dl>
-            {role !== "CLUSTER_MANAGER" && (
+            {role !== "CLUSTER_MANAGER" && r.diagnosis && (
               <div className="mt-4"><Field label="Provisional diagnosis / reason"><span className="whitespace-pre-line">{r.diagnosis}</span></Field></div>
             )}
             {(r.verifierNotes || r.infoRequestNote || r.rejectReason || r.declineReason) && (
@@ -140,7 +140,7 @@ export default async function ReferralPage({ params }) {
               <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-3">
                 <Field label="Visit type">{r.visitType === "ADMISSION" ? "Admission" : r.visitType}</Field>
                 <Field label="Treating doctor">{r.treatingDoctor}</Field>
-                <Field label="Admission date">{fmtDate(r.admissionDate)}</Field>
+                {r.admissionDate ? <Field label="Admission date">{fmtDate(r.admissionDate)}</Field> : null}
                 {r.treatmentNotes && role !== "CLUSTER_MANAGER" && <div className="col-span-full"><Field label="Treatment notes"><span className="whitespace-pre-line">{r.treatmentNotes}</span></Field></div>}
               </dl>
             )}

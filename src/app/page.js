@@ -28,7 +28,7 @@ export default async function Home() {
           <h1 className="animate-fade-up mt-5 text-5xl leading-[1.05] text-brand-900 sm:text-6xl" style={{ animationDelay: "0.08s" }}>
             Hospital referrals, <span className="text-gold-gradient">beautifully simple</span>.
           </h1>
-          <p className="animate-fade-up mx-auto mt-5 max-w-xl text-base text-slate-600 sm:text-lg lg:mx-0" style={{ animationDelay: "0.16s" }}>From the dispensary letter to the hospital report — for you and your family, verified, notified on WhatsApp and stored safely.</p>
+          <p className="animate-fade-up mx-auto mt-5 max-w-xl text-base text-slate-600 sm:text-lg lg:mx-0" style={{ animationDelay: "0.16s" }}>From the dispensary letter to the hospital report — for you and your family, verified, tracked at every step and stored safely.</p>
           <div className="animate-fade-up mt-8 flex flex-col justify-center gap-3 sm:flex-row lg:justify-start" style={{ animationDelay: "0.24s" }}>
             <Link href="/login" className="btn-primary group px-7 py-3 text-base">Log in <Icon name="arrowRight" size={17} className="transition-transform group-hover:translate-x-1" /></Link>
             <Link href="/register" className="btn-secondary px-7 py-3 text-base">Register as employee</Link>

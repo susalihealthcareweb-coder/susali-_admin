@@ -12,7 +12,7 @@ export default function AuthLayout({ children, title, subtitle }) {
           <Link href="/" className="animate-scale-in transition-transform duration-500 hover:scale-[1.02]"><FullLogo width={300} /></Link>
           <p className="animate-fade-up mt-6 text-brand-800/80" style={{ animationDelay: "0.15s" }}>From the dispensary letter to the hospital report — every referral verified, tracked and safely stored.</p>
           <ul className="stagger mt-7 space-y-2.5 text-left text-sm text-brand-900">
-            {["Raise a referral for yourself or your family", "Verified before any hospital sees it", "WhatsApp updates at every step", "Prescriptions and reports in one place"].map((t) => (
+            {["Raise a referral for yourself or your family", "Verified before any hospital sees it", "Updates in the app at every step", "Prescriptions and reports in one place"].map((t) => (
               <li key={t} className="flex items-center gap-3"><span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-gradient-to-br from-gold-300 to-gold-600 text-[11px] font-bold text-white shadow-sm">✓</span>{t}</li>
             ))}
           </ul>
